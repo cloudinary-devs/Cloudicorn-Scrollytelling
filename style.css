@@ -87,18 +87,6 @@ body {
   opacity: 0.8;
 }
 
-/* Back button styles */
-#back-to-choice-quiz,
-#back-to-choice-marketo {
-  z-index: 20;
-  transition: all 0.3s ease;
-}
-
-#back-to-choice-quiz:hover,
-#back-to-choice-marketo:hover {
-  transform: translateX(-2px);
-}
-
 /* Quiz section styles */
 #quiz-section {
   animation: slideIn 0.5s ease-in-out;
@@ -130,55 +118,6 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Marketo form styling */
-.mktoHtmlText {
-  color: white !important;
-}
-
-.mktoCaptchaDisclaimer {
-  color: white !important;
-}
-
-.mktoForm input[type=text], .mktoForm input[type=url], .mktoForm input[type=email], .mktoForm input[type=tel], .mktoForm input[type=number], .mktoForm input[type=date], .mktoForm textarea.mktoField, .mktoForm select.mktoField {
-  padding: 12px 16px !important;
-  max-width: 800px !important;
-  border-radius: 8px !important;
-  margin: 8px 0 !important;
-}
-
-/* Center text under the form */
-.mktoForm .mktoFormRow:last-child,
-.mktoForm .mktoFormRow:last-child *,
-.mktoForm .mktoFormRow:last-child p,
-.mktoForm .mktoFormRow:last-child div,
-.mktoForm .mktoFormRow:last-child span {
-  text-align: center !important;
-  color: white !important;
-  max-width: 800px !important;
-  margin: 0 auto !important;
-  display: block !important;
-}
-
-/* Style the submit button */
-.mktoForm .mktoButton {
-  background: linear-gradient(135deg, #ec4899, #f59e0b) !important;
-  color: white !important;
-  padding: 12px 24px !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3) !important;
-}
-
-.mktoForm .mktoButton:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4) !important;
-  background: linear-gradient(135deg, #db2777, #d97706) !important;
 }
 
 .star-1 {

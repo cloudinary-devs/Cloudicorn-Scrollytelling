@@ -4,17 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Great Space Chase: An Interactive Cloudinary Scrollytelling Experience</title>
+  <!-- Optional: Google Apps Script (or other) HTTPS URL for prize challenge row submission -->
+  <meta name="challenge-submit-endpoint" content="">
   <link rel="stylesheet" href="dist/output.css">
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen pb-20 md:pb-0">
   <!-- Header -->
   <header class="bg-transparent backdrop-blur-md shadow-lg border-b border-blue-500/50 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        <div class="flex items-center">
-          <h1 class="text-xl font-bold text-white">The Great Space Chase by Cloudinary</h1>
+      <div class="flex flex-wrap justify-between items-center gap-y-2 min-h-16 py-2 md:py-0 md:h-16">
+        <div class="flex items-center min-w-0 flex-1 md:flex-none">
+          <h1 class="text-base sm:text-xl font-bold text-white truncate">The Great Space Chase by Cloudinary</h1>
         </div>
-        <div class="flex items-center">
+        <nav class="flex items-center gap-1.5 sm:gap-2 order-3 md:order-none w-full md:w-auto justify-center md:justify-end" aria-label="Activities and prizes">
+          <button type="button" data-nav-action="quiz"
+                  class="inline-flex items-center justify-center rounded-lg border border-purple-400/60 bg-purple-600/40 px-2.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-purple-600/70 active:bg-purple-600 min-h-[44px] sm:min-h-0 flex-1 sm:flex-none max-w-[50%] sm:max-w-none">
+            Quiz 4 swag
+          </button>
+          <button type="button" data-nav-action="challenge" data-event="demo"
+                  class="inline-flex items-center justify-center rounded-lg border border-blue-400/60 bg-blue-600/40 px-2.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-blue-600/70 active:bg-blue-600 min-h-[44px] sm:min-h-0 flex-1 sm:flex-none max-w-[50%] sm:max-w-none">
+            Prize challenge
+          </button>
+        </nav>
+        <div class="flex items-center shrink-0">
           <a href="https://github.com/jlooper/scroll-d3" 
              target="_blank" 
              rel="noopener noreferrer"
@@ -63,7 +75,7 @@
             <div class="bg-gray-800/30 rounded-xl p-6 mb-4">
               <h3 class="text-xl font-semibold text-white mb-4">"I'm just a Cloudicorn, trying to float in space. But I feel kind of heavy! Help me fly!"</h3>
               <div class="relative">
-                <img src="https://res.cloudinary.com/dr60nybtj/image/upload/v1753899977/float3_kamv1f.png" 
+                <img src="https://res.cloudinary.com/jen-demos/image/upload/floating-cloudicorn.png" 
                      alt="Unoptimized Cloudicorn" 
                      class="w-full rounded-lg object-cover mb-4">
                 <div class="text-sm text-gray-400 space-y-2">
@@ -114,8 +126,108 @@
       </div>
     </div>
 
+    <!-- Prize challenge lab (manual URLs + spreadsheet submit) -->
+    <div id="prize-lab" class="bg-gradient-to-br from-indigo-950 via-gray-900 to-black text-white py-20 relative z-10 scroll-mt-20 border-y border-indigo-500/30">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+          <h2 class="text-3xl md:text-4xl font-bold mb-3">Prize challenge lab</h2>
+          <p class="text-lg text-gray-300 mb-4">Build two full delivery URLs using <strong class="text-white font-semibold">Cloudinary generative AI</strong>: first <strong class="text-white">generative background replace</strong> with a text prompt, then <strong class="text-white">generative replace</strong> with <code class="text-purple-300 bg-gray-800/80 px-1 rounded text-sm">from</code> / <code class="text-purple-300 bg-gray-800/80 px-1 rounded text-sm">to</code> prompts. Chain with <code class="text-purple-300 bg-gray-800/80 px-1 rounded text-sm">f_auto</code> and <code class="text-purple-300 bg-gray-800/80 px-1 rounded text-sm">q_auto</code>, then paste below. The playground further down does not count until you paste here.</p>
+
+          <div class="mb-8 rounded-xl border border-indigo-500/40 bg-gray-900/60 p-4 sm:p-5 text-left max-w-3xl mx-auto">
+            <p class="text-sm font-medium text-indigo-200 mb-2">Copy this starter URL, then insert your transformation chain after <code class="text-purple-300">/upload/</code> and before <code class="text-purple-300">floating-cloudicorn.png</code>.</p>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+              <code id="prize-starter-url" class="block flex-1 break-all rounded-lg bg-black/50 px-3 py-3 text-xs sm:text-sm font-mono text-emerald-300/95 leading-relaxed border border-gray-700"></code>
+              <button type="button" id="prize-copy-starter-url"
+                class="shrink-0 inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 min-h-[44px] sm:min-w-[7rem]">
+                Copy URL
+              </button>
+            </div>
+            <p id="prize-copy-starter-feedback" class="text-xs text-green-400 mt-2 min-h-[1rem]" aria-live="polite"></p>
+          </div>
+
+          <p class="text-sm text-indigo-200 mb-8">
+            Event: <span id="prize-event-display" class="font-semibold text-white">—</span>
+          </p>
+        </div>
+
+        <div class="space-y-10">
+          <!-- Task 1 -->
+          <div class="bg-gray-800/40 border border-gray-600/50 rounded-xl p-6">
+            <h3 id="prize-task-1-title" class="text-xl font-semibold text-white mb-2"></h3>
+            <p id="prize-task-1-desc" class="text-gray-300 text-sm mb-3"></p>
+            <a id="prize-task-1-docs" href="#" class="text-sm text-purple-300 underline hover:text-white mb-4 inline-block" target="_blank" rel="noopener noreferrer">Open docs</a>
+            <label for="prize-url-1" class="block text-sm font-medium text-gray-300 mb-2">Full URL</label>
+            <textarea id="prize-url-1" rows="3" placeholder="https://res.cloudinary.com/..."
+              class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"></textarea>
+            <div class="flex flex-wrap items-center gap-3 mt-3">
+              <button type="button" id="prize-check-1" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold min-h-[44px]">Check URL</button>
+              <span id="prize-status-1" class="text-sm text-gray-400"></span>
+            </div>
+            <div class="mt-4 max-w-xs mx-auto sm:mx-0 relative min-h-[120px]">
+              <img id="prize-preview-1" alt="" class="relative z-10 w-full rounded-lg border border-gray-600 hidden" />
+              <div id="prize-preview-loader-1" class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-900/90 border border-gray-600 opacity-0 pointer-events-none transition-opacity duration-200">
+                <div class="animate-spin rounded-full h-10 w-10 border-2 border-indigo-400 border-t-transparent" aria-hidden="true"></div>
+                <span class="text-xs text-gray-400">Generating preview…</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task 2 -->
+          <div class="bg-gray-800/40 border border-gray-600/50 rounded-xl p-6">
+            <h3 id="prize-task-2-title" class="text-xl font-semibold text-white mb-2"></h3>
+            <p id="prize-task-2-desc" class="text-gray-300 text-sm mb-3"></p>
+            <a id="prize-task-2-docs" href="#" class="text-sm text-purple-300 underline hover:text-white mb-4 inline-block" target="_blank" rel="noopener noreferrer">Open docs</a>
+            <label for="prize-url-2" class="block text-sm font-medium text-gray-300 mb-2">Full URL</label>
+            <textarea id="prize-url-2" rows="3" placeholder="https://res.cloudinary.com/..."
+              class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"></textarea>
+            <div class="flex flex-wrap items-center gap-3 mt-3">
+              <button type="button" id="prize-check-2" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold min-h-[44px]">Check URL</button>
+              <span id="prize-status-2" class="text-sm text-gray-400"></span>
+            </div>
+            <div class="mt-4 max-w-xs mx-auto sm:mx-0 relative min-h-[120px]">
+              <img id="prize-preview-2" alt="" class="relative z-10 w-full rounded-lg border border-gray-600 hidden" />
+              <div id="prize-preview-loader-2" class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-900/90 border border-gray-600 opacity-0 pointer-events-none transition-opacity duration-200">
+                <div class="animate-spin rounded-full h-10 w-10 border-2 border-indigo-400 border-t-transparent" aria-hidden="true"></div>
+                <span class="text-xs text-gray-400">Generating preview…</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="bg-indigo-900/30 border border-indigo-500/40 rounded-xl p-6">
+            <form id="prize-challenge-form" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+                <div>
+                  <label for="prize-first-name" class="block text-sm font-medium text-gray-300 mb-2">First name <span class="text-red-400">*</span></label>
+                  <input type="text" id="prize-first-name" name="firstName" required autocomplete="given-name" placeholder="Ada"
+                    class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label for="prize-last-name" class="block text-sm font-medium text-gray-300 mb-2">Last name <span class="text-red-400">*</span></label>
+                  <input type="text" id="prize-last-name" name="lastName" required autocomplete="family-name" placeholder="Lovelace"
+                    class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+              </div>
+              <div>
+                <label for="prize-email" class="block text-sm font-medium text-gray-300 mb-2">Email <span class="text-red-400">*</span> (for prize contact)</label>
+                <input type="email" id="prize-email" name="email" required autocomplete="email" placeholder="you@example.com"
+                  class="w-full max-w-md px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+              <p class="text-xs text-gray-500">Your validated task URLs above are sent with this submission.</p>
+              <button type="submit" id="prize-submit" disabled
+                class="px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold min-h-[44px] disabled:opacity-40 disabled:cursor-not-allowed">
+                Submit entries
+              </button>
+            </form>
+            <p id="prize-submit-hint" class="text-xs text-gray-500 mt-2"></p>
+            <p id="prize-submit-status" class="text-sm mt-2 min-h-[1.25rem]"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Interactive Transformation Section -->
-    <div class="bg-gradient-to-br from-gray-900 to-purple-900 text-white py-20 relative z-10">
+    <div id="challenge-section" class="bg-gradient-to-br from-gray-900 to-purple-900 text-white py-20 relative z-10 scroll-mt-20">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-3xl md:text-4xl font-bold mb-4">Now it's your turn!</h2>
@@ -170,7 +282,7 @@
             
             <div class="bg-gray-800/30 rounded-lg p-4">
               <h4 class="text-sm font-medium text-gray-300 mb-2">Generated URL:</h4>
-              <div id="generated-url-breakdown" class="text-xs bg-gray-900/50 px-2 py-1 rounded block"></div>
+              <div id="generated-url-breakdown" class="text-sm sm:text-base bg-gray-900/50 px-2 py-1 rounded block leading-relaxed"></div>
             </div>
           </div>
           
@@ -196,12 +308,12 @@
     </div>
 
     <!-- Cloudinary Quiz Section -->
-    <div class="bg-gradient-to-br from-purple-900 to-black text-white py-20 relative z-10">
+    <div class="bg-gradient-to-br from-purple-900 to-black text-white py-20 relative z-10 scroll-mt-20">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
 
         <!-- Quiz Container (Hidden initially) -->
-        <div id="quiz-section" class="hidden relative">
+        <div id="quiz-section" class="hidden relative scroll-mt-20">
           
           <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold mb-4">Cloudinary Transformation Quiz</h2>
@@ -280,7 +392,7 @@
 
             <!-- Question 4 -->
             <div class="quiz-question bg-gray-800/30 rounded-lg p-6 border border-gray-700" data-question="4">
-              <h3 class="text-xl font-semibold mb-4">4. How do you chain multiple transformations in Cloudinary?</h3>
+              <h3 class="text-xl font-semibold mb-4">4. How do you chain multiple URL parameters for transformations in Cloudinary?</h3>
               <div class="space-y-3">
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q4" value="a" class="mr-3">
@@ -327,7 +439,7 @@
             <!-- Submit Button -->
             <div class="text-center">
               <button id="submit-quiz" class="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105">
-                🎯 Submit Quiz, join Newsletter, & Win Swag!
+                🎯 Submit
               </button>
             </div>
 
@@ -354,7 +466,7 @@
                   <div class="relative z-10">
                     <h3 class="text-xl font-bold text-yellow-400 mb-4 flex items-center justify-center congratulations-sparkle">
                       <span class="mr-2">🏆</span>
-                      <span class="animate-pulse">Congratulations!</span>
+                      <span class="animate-pulse">Swag time!</span>
                       <span class="ml-2">🏆</span>
                     </h3>
                     <div class="flex justify-center space-x-4 text-2xl">
@@ -371,11 +483,6 @@
               </button>
             
 
-                <button id="newsletter-btn" class="mx-auto px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105">
-                  Last Step: Join Our Newsletter to Claim Your Prize!
-                </button>
-
-            
           </div>
         </div>
 
@@ -387,11 +494,39 @@
   <!-- Footer -->
   <footer class="bg-gray-900 text-white py-12 mt-32">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-8" aria-label="Activities and prizes">
+        <button type="button" data-nav-action="quiz"
+                class="inline-flex items-center justify-center rounded-lg border border-purple-400/50 bg-purple-700/50 px-4 py-3 text-sm font-semibold text-white hover:bg-purple-600 min-w-[200px] min-h-[44px]">
+          Quiz 4 swag
+        </button>
+        <button type="button" data-nav-action="challenge" data-event="demo"
+                class="inline-flex items-center justify-center rounded-lg border border-blue-400/50 bg-blue-700/50 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-600 min-w-[200px] min-h-[44px]">
+          Prize challenge
+        </button>
+      </nav>
+      <p class="text-center text-xs text-gray-500 mb-4 max-w-xl mx-auto px-2">
+        Shareable links: <code class="text-purple-300 bg-gray-800/80 px-1 rounded">?quiz=true</code> for the quiz, or <code class="text-blue-300 bg-gray-800/80 px-1 rounded">?challenge=true&amp;event=your-slug</code> for the prize lab (set per-booth <code class="text-gray-400">data-event</code> on buttons).
+      </p>
       <div class="text-center">
         <p class="text-gray-400">&copy; <script>document.write(new Date().getFullYear());</script> Cloudinary. Built with D3 and Tailwind.</p>
       </div>
     </div>
   </footer>
+
+  <!-- Mobile thumb dock (mirrors header actions) -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-purple-500/40 bg-gray-950/95 backdrop-blur-md px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.35)]"
+       role="navigation" aria-label="Quick actions">
+    <div class="flex gap-2 max-w-lg mx-auto">
+      <button type="button" data-nav-action="quiz"
+              class="flex-1 inline-flex items-center justify-center rounded-lg border border-purple-400/50 bg-purple-700/60 px-3 py-3 text-sm font-semibold text-white active:bg-purple-600 min-h-[48px]">
+        Quiz 4 swag
+      </button>
+      <button type="button" data-nav-action="challenge" data-event="demo"
+              class="flex-1 inline-flex items-center justify-center rounded-lg border border-blue-400/50 bg-blue-700/60 px-3 py-3 text-sm font-semibold text-white active:bg-blue-600 min-h-[48px]">
+        Prize challenge
+      </button>
+    </div>
+  </div>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="main.js"></script>

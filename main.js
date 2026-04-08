@@ -9,13 +9,14 @@
 const CONFIG = {
   // Cloudinary configuration
   CLOUDINARY: {
-    BASE_URL: 'https://res.cloudinary.com/dr60nybtj/image/upload',
-    IMAGE_ID: 'v1753899977/float3_kamv1f.png'
+    BASE_URL: 'https://res.cloudinary.com/jen-demos/image/upload',
+    IMAGE_ID: 'floating-cloudicorn.png'
   },
   
   // Quiz configuration
   QUIZ: {
     TOTAL_QUESTIONS: 5,
+    /** Min correct answers for swag (4/5 = 80%). */
     PASSING_SCORE: 4,
     CORRECT_ANSWERS: {
       q1: 'a', // e_cartoonify
@@ -30,6 +31,40 @@ const CONFIG = {
   STARFIELD: {
     NUM_STARS: 80,
     SCROLL_SPEED: 0.0003
+  },
+
+  /**
+   * Prize challenge lab: manual URLs; submit via Netlify function → Google Sheets.
+   * Override with <meta name="challenge-submit-endpoint" content="..."> if needed.
+   */
+  PRIZE_CHALLENGE: {
+    DEFAULT_EVENT: 'demo',
+    /** Default POST target (relative works on Netlify and in `netlify dev`). */
+    SUBMIT_ENDPOINT: '/.netlify/functions/submit-challenge',
+    EVENT_LABELS: {
+      demo: 'Local / demo',
+      wearedevs2026: 'We Are Developers 2026'
+    },
+    TASKS: [
+      {
+        id: 'generativeBackgroundReplace',
+        validator: 'generativeBackgroundReplacePrompt',
+        title: 'Task 1: Generative background replace (prompted)',
+        description:
+          'Use generative background replace with a natural-language prompt (e.g. e_gen_background_replace:prompt_your%20idea). Your URL must include e_gen_background_replace, prompt_, f_auto, and q_auto. See “Using a prompt” in the docs.',
+        docsUrl:
+          'https://cloudinary.com/documentation/generative_ai_transformations#generative_background_replace'
+      },
+      {
+        id: 'generativeReplace',
+        validator: 'generativeReplacePrompt',
+        title: 'Task 2: Generative replace (prompted)',
+        description:
+          'Use generative replace with explicit from and to prompts (e_gen_replace:from_…;to_…). Your URL must include e_gen_replace, both from_ and to_, plus f_auto and q_auto. Hint: try replacing the balloon.',
+        docsUrl:
+          'https://cloudinary.com/documentation/generative_ai_transformations#generative_replace'
+      }
+    ]
   }
 };
 
@@ -47,6 +82,394 @@ const URLUtils = {
   hasParameter: (name, value) => {
     const param = URLUtils.getParameter(name);
     return param === value || param === '1';
+  },
+
+  /** Merge query params and update the address bar without reload. */
+  setSearchParams: (updates) => {
+    const params = new URLSearchParams(window.location.search);
+    Object.entries(updates).forEach(([key, val]) => {
+      if (val === null || val === undefined || val === '') {
+        params.delete(key);
+      } else {
+        params.set(key, String(val));
+      }
+    });
+    const qs = params.toString();
+    const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    window.history.pushState({}, '', next);
+  }
+};
+
+// ============================================================================
+// PRIZE CHALLENGE LAB (URL validation + optional spreadsheet submit)
+// ============================================================================
+
+const CHALLENGE_VALIDATORS = {
+  generativeBackgroundReplacePrompt: (normalizedChain) =>
+    /e_gen_background_replace/.test(normalizedChain) &&
+    /prompt_/.test(normalizedChain) &&
+    /f_auto/.test(normalizedChain) &&
+    /q_auto/.test(normalizedChain),
+  generativeReplacePrompt: (normalizedChain) =>
+    /e_gen_replace/.test(normalizedChain) &&
+    /from_/.test(normalizedChain) &&
+    /to_/.test(normalizedChain) &&
+    /f_auto/.test(normalizedChain) &&
+    /q_auto/.test(normalizedChain)
+};
+
+const ChallengeLab = {
+  state: { valid: [false, false] },
+
+  getSubmitEndpoint: () => {
+    const meta = document.querySelector('meta[name="challenge-submit-endpoint"]');
+    if (meta && meta.content && meta.content.trim()) return meta.content.trim();
+    return CONFIG.PRIZE_CHALLENGE.SUBMIT_ENDPOINT || '';
+  },
+
+  getCloudName: () => {
+    try {
+      const u = new URL(CONFIG.CLOUDINARY.BASE_URL);
+      return u.pathname.split('/').filter(Boolean)[0] || 'jen-demos';
+    } catch {
+      return 'jen-demos';
+    }
+  },
+
+  normalizeChain: (chain) => {
+    if (!chain) return '';
+    return chain
+      .toLowerCase()
+      .split('/')
+      .filter((seg) => seg && !/^v\d+$/.test(seg))
+      .join('/');
+  },
+
+  extractChainFromUrl: (urlString) => {
+    const cloud = ChallengeLab.getCloudName();
+    const publicFile = CONFIG.CLOUDINARY.IMAGE_ID;
+    try {
+      const u = new URL(urlString.trim());
+      if (!u.hostname.endsWith('cloudinary.com')) {
+        return { ok: false, error: 'Use a Cloudinary delivery URL (e.g. res.cloudinary.com).' };
+      }
+      const parts = u.pathname.split('/').filter(Boolean);
+      if (parts[0] !== cloud) {
+        return { ok: false, error: `Cloud must be "${cloud}" (this demo’s asset).` };
+      }
+      const uploadIdx = parts.indexOf('upload');
+      if (uploadIdx < 0) {
+        return { ok: false, error: 'Path must include /image/upload/.' };
+      }
+      let rest = parts.slice(uploadIdx + 1);
+      if (rest[0] && /^v\d+$/.test(rest[0])) {
+        rest = rest.slice(1);
+      }
+      if (rest.length < 2) {
+        return { ok: false, error: 'Missing transformations or public ID.' };
+      }
+      const lastSeg = rest[rest.length - 1];
+      if (lastSeg.toLowerCase() !== publicFile.toLowerCase()) {
+        return { ok: false, error: `Public ID must be "${publicFile}".` };
+      }
+      const chain = rest.slice(0, -1).join('/');
+      return { ok: true, chain };
+    } catch {
+      return { ok: false, error: 'Invalid URL.' };
+    }
+  },
+
+  validateTask: (taskIndex, urlString) => {
+    const task = CONFIG.PRIZE_CHALLENGE.TASKS[taskIndex];
+    if (!task) return { ok: false, error: 'Unknown task.' };
+    const parsed = ChallengeLab.extractChainFromUrl(urlString);
+    if (!parsed.ok) return parsed;
+    const n = ChallengeLab.normalizeChain(parsed.chain);
+    const key = task.validator || task.id;
+    const fn = CHALLENGE_VALIDATORS[key];
+    if (!fn) return { ok: false, error: 'No validator for this task.' };
+    if (!fn(n)) {
+      return {
+        ok: false,
+        error: 'Does not match this task. Compare your transformation chain to the docs.'
+      };
+    }
+    return { ok: true, chain: n };
+  },
+
+  renderTaskCopy: () => {
+    CONFIG.PRIZE_CHALLENGE.TASKS.forEach((task, i) => {
+      const idx = i + 1;
+      const titleEl = document.getElementById(`prize-task-${idx}-title`);
+      const descEl = document.getElementById(`prize-task-${idx}-desc`);
+      const docsEl = document.getElementById(`prize-task-${idx}-docs`);
+      if (titleEl) titleEl.textContent = task.title;
+      if (descEl) descEl.textContent = task.description;
+      if (docsEl && task.docsUrl) {
+        docsEl.href = task.docsUrl;
+        docsEl.classList.remove('hidden');
+      }
+    });
+  },
+
+  /** Base delivery URL (no transforms) — same string users copy to extend with AI effects. */
+  renderStarterUrl: () => {
+    const url = CloudinaryEngine.generateUrl('');
+    const el = document.getElementById('prize-starter-url');
+    if (el) el.textContent = url;
+  },
+
+  copyStarterUrl: async () => {
+    const el = document.getElementById('prize-starter-url');
+    const text = el?.textContent?.trim() || '';
+    const feedback = document.getElementById('prize-copy-starter-feedback');
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      if (feedback) {
+        feedback.textContent = 'Copied!';
+        feedback.className = 'text-xs text-green-400 mt-2 min-h-[1rem]';
+        setTimeout(() => {
+          if (feedback) feedback.textContent = '';
+        }, 2500);
+      }
+    } catch {
+      if (feedback) {
+        feedback.textContent = 'Clipboard blocked — select the URL and copy manually.';
+        feedback.className = 'text-xs text-amber-400 mt-2 min-h-[1rem]';
+      }
+    }
+  },
+
+  syncEventDisplay: () => {
+    const raw = URLUtils.getParameter('event') || CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT;
+    const label =
+      CONFIG.PRIZE_CHALLENGE.EVENT_LABELS[raw] || raw || CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT;
+    const el = document.getElementById('prize-event-display');
+    if (el) {
+      el.textContent = label;
+      el.dataset.eventId = raw || '';
+    }
+    const sub = document.getElementById('prize-submit-hint');
+    if (sub) {
+      sub.textContent = ChallengeLab.getSubmitEndpoint()
+        ? 'Submit unlocks only after both Check URL steps pass. Rows are written by the Netlify function (configure Google Sheets env vars on Netlify).'
+        : 'Set CONFIG.PRIZE_CHALLENGE.SUBMIT_ENDPOINT or the challenge-submit-endpoint meta tag.';
+    }
+  },
+
+  setStatus: (index, ok, message) => {
+    const el = document.getElementById(`prize-status-${index + 1}`);
+    if (!el) return;
+    el.textContent = message;
+    el.className =
+      'text-sm mt-2 ' +
+      (ok === null ? 'text-gray-400' : ok ? 'text-green-400 font-medium' : 'text-red-400');
+    if (ok !== null) {
+      ChallengeLab.state.valid[index] = !!ok;
+    }
+    ChallengeLab.updateSubmitButtonState();
+  },
+
+  updateSubmitButtonState: () => {
+    const btn = document.getElementById('prize-submit');
+    if (!btn) return;
+    const ready = ChallengeLab.state.valid[0] && ChallengeLab.state.valid[1];
+    btn.disabled = !ready;
+  },
+
+  setPreviewLoading: (taskIndex, show) => {
+    const loader = document.getElementById(`prize-preview-loader-${taskIndex + 1}`);
+    if (!loader) return;
+    if (show) {
+      loader.classList.remove('opacity-0', 'pointer-events-none');
+      loader.classList.add('opacity-100');
+    } else {
+      loader.classList.add('opacity-0', 'pointer-events-none');
+      loader.classList.remove('opacity-100');
+    }
+  },
+
+  handleCheck: (taskIndex) => {
+    const input = document.getElementById(`prize-url-${taskIndex + 1}`);
+    const preview = document.getElementById(`prize-preview-${taskIndex + 1}`);
+    const url = input ? input.value.trim() : '';
+    if (!url) {
+      ChallengeLab.setStatus(taskIndex, false, 'Paste a full Cloudinary URL first.');
+      if (preview) {
+        preview.removeAttribute('src');
+        preview.classList.add('hidden');
+      }
+      ChallengeLab.setPreviewLoading(taskIndex, false);
+      return;
+    }
+    const result = ChallengeLab.validateTask(taskIndex, url);
+    if (!result.ok) {
+      ChallengeLab.setStatus(taskIndex, false, result.error);
+      if (preview) {
+        preview.removeAttribute('src');
+        preview.classList.add('hidden');
+      }
+      ChallengeLab.setPreviewLoading(taskIndex, false);
+      return;
+    }
+    ChallengeLab.setStatus(taskIndex, true, 'Looks correct — loading preview…');
+    if (preview) {
+      preview.classList.add('hidden');
+      ChallengeLab.setPreviewLoading(taskIndex, true);
+
+      const finishLoad = () => {
+        preview.onload = null;
+        preview.onerror = null;
+        ChallengeLab.setPreviewLoading(taskIndex, false);
+      };
+
+      preview.onload = () => {
+        finishLoad();
+        preview.classList.remove('hidden');
+        preview.alt = `Preview task ${taskIndex + 1}`;
+        ChallengeLab.setStatus(taskIndex, true, 'Looks correct for this task.');
+      };
+
+      preview.onerror = () => {
+        finishLoad();
+        preview.classList.add('hidden');
+        ChallengeLab.setStatus(taskIndex, false, 'Image failed to load. Check the URL.');
+      };
+
+      preview.src = '';
+      preview.src = url;
+    }
+  },
+
+  handleSubmit: async (event) => {
+    if (event && typeof event.preventDefault === 'function') {
+      event.preventDefault();
+    }
+    const endpoint = ChallengeLab.getSubmitEndpoint();
+    const statusEl = document.getElementById('prize-submit-status');
+    const form = document.getElementById('prize-challenge-form');
+    if (form && !form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const firstNameEl = document.getElementById('prize-first-name');
+    const lastNameEl = document.getElementById('prize-last-name');
+    const emailEl = document.getElementById('prize-email');
+    const firstName = firstNameEl ? firstNameEl.value.trim() : '';
+    const lastName = lastNameEl ? lastNameEl.value.trim() : '';
+    const email = emailEl ? emailEl.value.trim() : '';
+
+    const simpleEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!simpleEmail.test(email)) {
+      if (statusEl) {
+        statusEl.textContent = 'Enter a valid email address.';
+        statusEl.className = 'text-sm mt-2 text-red-400';
+      }
+      return;
+    }
+
+    const url1 = document.getElementById('prize-url-1')?.value.trim() || '';
+    const url2 = document.getElementById('prize-url-2')?.value.trim() || '';
+    const v1 = ChallengeLab.validateTask(0, url1);
+    const v2 = ChallengeLab.validateTask(1, url2);
+    if (!v1.ok) {
+      if (statusEl) {
+        statusEl.textContent = `Task 1: ${v1.error}`;
+        statusEl.className = 'text-sm mt-2 text-red-400';
+      }
+      return;
+    }
+    if (!v2.ok) {
+      if (statusEl) {
+        statusEl.textContent = `Task 2: ${v2.error}`;
+        statusEl.className = 'text-sm mt-2 text-red-400';
+      }
+      return;
+    }
+
+    if (!endpoint) {
+      if (statusEl) {
+        statusEl.textContent =
+          'Submit endpoint not configured. Set meta challenge-submit-endpoint or CONFIG.PRIZE_CHALLENGE.SUBMIT_ENDPOINT.';
+        statusEl.className = 'text-sm mt-2 text-amber-400';
+      }
+      return;
+    }
+
+    const eventId = URLUtils.getParameter('event') || CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT;
+    const eventLabel =
+      CONFIG.PRIZE_CHALLENGE.EVENT_LABELS[eventId] || eventId || CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT;
+
+    const payload = {
+      event: eventId,
+      eventName: eventLabel,
+      firstName,
+      lastName,
+      email,
+      url1,
+      url2
+    };
+
+    if (statusEl) {
+      statusEl.textContent = 'Submitting…';
+      statusEl.className = 'text-sm mt-2 text-gray-300';
+    }
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        let msg = text || res.statusText;
+        try {
+          const j = JSON.parse(text);
+          if (j.error) msg = j.detail ? `${j.error}: ${j.detail}` : j.error;
+        } catch {
+          /* use raw text */
+        }
+        throw new Error(msg);
+      }
+      if (statusEl) {
+        statusEl.textContent = 'Submitted. Thank you!';
+        statusEl.className = 'text-sm mt-2 text-green-400';
+      }
+    } catch (err) {
+      if (statusEl) {
+        statusEl.textContent =
+          'Submit failed. Use netlify dev with env vars, or check Netlify function logs. ' +
+          (err.message || '');
+        statusEl.className = 'text-sm mt-2 text-red-400';
+      }
+    }
+  },
+
+  init: () => {
+    ChallengeLab.renderStarterUrl();
+    ChallengeLab.renderTaskCopy();
+    ChallengeLab.syncEventDisplay();
+    document.getElementById('prize-copy-starter-url')?.addEventListener('click', ChallengeLab.copyStarterUrl);
+    document.getElementById('prize-check-1')?.addEventListener('click', () => ChallengeLab.handleCheck(0));
+    document.getElementById('prize-check-2')?.addEventListener('click', () => ChallengeLab.handleCheck(1));
+    document.getElementById('prize-challenge-form')?.addEventListener('submit', ChallengeLab.handleSubmit);
+    [0, 1].forEach((i) => {
+      document.getElementById(`prize-url-${i + 1}`)?.addEventListener('input', () => {
+        ChallengeLab.state.valid[i] = false;
+        ChallengeLab.setStatus(i, null, 'Edited — click Check URL again.');
+        const preview = document.getElementById(`prize-preview-${i + 1}`);
+        if (preview) {
+          preview.removeAttribute('src');
+          preview.classList.add('hidden');
+        }
+        ChallengeLab.setPreviewLoading(i, false);
+      });
+    });
+    ChallengeLab.updateSubmitButtonState();
   }
 };
 
@@ -133,11 +556,11 @@ const URLBreakdown = {
   // Create URL breakdown with colors
   createBreakdown: (baseUrl, transformations, imageId, options = {}) => {
     const {
-      baseUrlClass = 'text-blue-300',
+      baseUrlClass = 'text-blue-400',
       transformationClass = 'text-black bg-yellow-300 font-semibold rounded-md px-1',
-      imageIdClass = 'text-blue-300',
-      baseUrlText = 'https://res.cloudinary.com/dr60nybtj/image/upload/',
-      imageIdText = '/v1753899977/float3_kamv1f.png',
+      imageIdClass = 'text-blue-400',
+      baseUrlText = 'https://res.cloudinary.com/jens-demos/image/upload/',
+      imageIdText = '/floating-cloudicorn.png',
       transformationText = 'f_auto/q_auto'
     } = options;
     
@@ -480,7 +903,7 @@ const SectionsGenerator = {
             <div class="text text-lg text-gray-300 text-center lg:text-left max-w-2xl">
               <h2 class="text-2xl font-bold text-white mb-4">${section.title}</h2>
               <p class="text-gray-300 leading-relaxed mb-4">${section.description}</p>
-              <div class="url-breakdown bg-gray-800/50 px-3 py-2 rounded text-xs"></div>
+              <div class="url-breakdown bg-gray-800/50 px-3 py-2 rounded text-sm sm:text-base leading-relaxed"></div>
             </div>
           </div>
         </div>
@@ -591,8 +1014,7 @@ const QuizSystem = {
       score: DOMUtils.select('#quiz-score'),
       message: DOMUtils.select('#quiz-message'),
       swagReward: DOMUtils.select('#swag-reward'),
-      retakeBtn: DOMUtils.select('#retake-quiz'),
-      newsletterBtn: DOMUtils.select('#newsletter-btn')
+      retakeBtn: DOMUtils.select('#retake-quiz')
     };
     
     QuizSystem.setupEventListeners();
@@ -602,7 +1024,6 @@ const QuizSystem = {
   setupEventListeners: () => {
     QuizSystem.elements.submitBtn.addEventListener('click', QuizSystem.handleSubmit);
     QuizSystem.elements.retakeBtn.addEventListener('click', QuizSystem.handleRetake);
-    QuizSystem.elements.newsletterBtn.addEventListener('click', QuizSystem.openNewsletterWindow);
     
     // Add visual feedback for selected answers
     document.querySelectorAll('input[type="radio"]').forEach(radio => {
@@ -658,24 +1079,25 @@ const QuizSystem = {
   },
 
   showResults: (score) => {
-    const { PASSING_SCORE } = CONFIG.QUIZ;
+    const { PASSING_SCORE, TOTAL_QUESTIONS } = CONFIG.QUIZ;
+    const pct = Math.round((score / TOTAL_QUESTIONS) * 100);
     
-    if (score === CONFIG.QUIZ.TOTAL_QUESTIONS) {
-      QuizSystem.elements.message.textContent = "🎉 100%! You're a Cloudinary expert! Join our newsletter to stay updated!";
-      QuizSystem.elements.message.className = "text-lg mb-6 text-green-400 font-semibold";
+    if (score >= PASSING_SCORE) {
       QuizSystem.elements.swagReward.classList.remove('hidden');
       QuizSystem.hideRetryButton();
-      QuizSystem.showNewsletterButton();
-    } else if (score >= PASSING_SCORE) {
-      QuizSystem.elements.message.textContent = "👍 Great job! You know your Cloudinary transformations! Join our newsletter to stay updated!";
       QuizSystem.elements.message.className = "text-lg mb-6 text-green-400 font-semibold";
-      QuizSystem.hideRetryButton();
-      QuizSystem.showNewsletterButton();
+      if (score === TOTAL_QUESTIONS) {
+        QuizSystem.elements.message.textContent =
+          "🎉 100%! You're a Cloudinary expert! Show this screen to claim your swag.";
+      } else {
+        QuizSystem.elements.message.textContent =
+          `👍 You scored ${pct}% — Just enough to earn some swag. Show this screen to claim yours!`;
+      }
     } else {
+      QuizSystem.elements.swagReward.classList.add('hidden');
       QuizSystem.elements.message.textContent = "📚 Keep learning! Review the transformations above and try again!";
       QuizSystem.elements.message.className = "text-lg mb-6 text-red-400 font-semibold";
       QuizSystem.showRetryButton();
-      QuizSystem.hideNewsletterButton();
     }
   },
 
@@ -703,18 +1125,6 @@ const QuizSystem = {
     }
   },
 
-  hideNewsletterButton: () => {
-    if (QuizSystem.elements.newsletterBtn) {
-      QuizSystem.elements.newsletterBtn.style.display = 'none';
-    }
-  },
-
-  showNewsletterButton: () => {
-    if (QuizSystem.elements.newsletterBtn) {
-      QuizSystem.elements.newsletterBtn.style.display = 'block';
-    }
-  },
-
   handleRetake: () => {
     // Reset radio buttons
     document.querySelectorAll('input[type="radio"]').forEach(radio => {
@@ -730,7 +1140,6 @@ const QuizSystem = {
     
     // Hide buttons
     QuizSystem.hideRetryButton();
-    QuizSystem.hideNewsletterButton();
     
     // Scroll to top of quiz
     document.getElementById('quiz-container').scrollIntoView({ behavior: 'smooth' });
@@ -752,21 +1161,7 @@ const QuizSystem = {
     }
   },
 
-  openNewsletterWindow: () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const conferenceId = urlParams.get('conference') || 'e3f.lp.we-are-developers-2025';
-    
-    const newsletterUrl = `https://lp.cloudinary.com/${conferenceId}.html`;
-    const formWindow = window.open(newsletterUrl, 'marketo_form', 'width=600,height=800,scrollbars=yes,resizable=yes');
-    
-    if (formWindow) {
-      formWindow.focus();
-    } else {
-      alert('Please allow popups for this site to open the newsletter signup form.');
-    }
-  },
-
-  checkVisibility: () => {
+  updateQuizSectionVisibility: () => {
     const showQuiz = URLUtils.hasParameter('quiz', 'true');
     const quizSection = DOMUtils.select('#quiz-section');
     
@@ -781,6 +1176,68 @@ const QuizSystem = {
         quizSection.style.display = 'none';
       }
     }
+  },
+
+  checkVisibility: () => {
+    QuizSystem.updateQuizSectionVisibility();
+  }
+};
+
+// ============================================================================
+// SITE NAVIGATION (quiz / challenge deep links)
+// ============================================================================
+
+const SiteNavigation = {
+  scrollToId: (id, behavior = 'smooth') => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior, block: 'start' });
+    }
+  },
+
+  applyDeepLinksFromUrl: () => {
+    QuizSystem.updateQuizSectionVisibility();
+    ChallengeLab.syncEventDisplay();
+    requestAnimationFrame(() => {
+      if (URLUtils.hasParameter('quiz', 'true')) {
+        SiteNavigation.scrollToId('quiz-section');
+      } else if (URLUtils.hasParameter('challenge', 'true')) {
+        SiteNavigation.scrollToId('prize-lab');
+      }
+    });
+  },
+
+  goToQuiz: (e) => {
+    if (e) e.preventDefault();
+    URLUtils.setSearchParams({ quiz: 'true', challenge: null, event: null });
+    QuizSystem.updateQuizSectionVisibility();
+    SiteNavigation.scrollToId('quiz-section');
+  },
+
+  goToChallenge: (e) => {
+    if (e) e.preventDefault();
+    const raw = e?.currentTarget?.dataset?.event;
+    const ev =
+      raw !== undefined && String(raw).trim() !== ''
+        ? String(raw).trim()
+        : CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT;
+    URLUtils.setSearchParams({ challenge: 'true', quiz: null, event: ev });
+    QuizSystem.updateQuizSectionVisibility();
+    ChallengeLab.syncEventDisplay();
+    SiteNavigation.scrollToId('prize-lab');
+  },
+
+  init: () => {
+    document.querySelectorAll('[data-nav-action="quiz"]').forEach((el) => {
+      el.addEventListener('click', SiteNavigation.goToQuiz);
+    });
+    document.querySelectorAll('[data-nav-action="challenge"]').forEach((el) => {
+      el.addEventListener('click', SiteNavigation.goToChallenge);
+    });
+    window.addEventListener('popstate', () => {
+      SiteNavigation.applyDeepLinksFromUrl();
+    });
+    SiteNavigation.applyDeepLinksFromUrl();
   }
 };
 
@@ -824,6 +1281,12 @@ const App = {
     
     // Initialize quiz system
     QuizSystem.init();
+    
+    // Prize challenge lab (tasks, validation, submit)
+    ChallengeLab.init();
+    
+    // Deep links + header/footer nav (quiz & challenge)
+    SiteNavigation.init();
   }
 };
 

@@ -9,7 +9,11 @@
   # Set Node.js version
   NODE_VERSION = "18"
 
-# Redirect rules for SPA (Single Page Application)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Redirect rules for SPA (Single Page Application). Netlify invokes functions before these rewrites.
 [[redirects]]
   from = "/*"
   to = "/index.html"
