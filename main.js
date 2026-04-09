@@ -569,9 +569,7 @@ const URLBreakdown = {
     const finalTransformations = transformations || transformationText;
     
     return `
-      <span class="${baseUrlClass}">${finalBaseUrl}</span>
-      <span class="${transformationClass}">${finalTransformations}</span>
-      <span class="${imageIdClass}">${finalImageId}</span>
+      <span class="${baseUrlClass}">${finalBaseUrl}</span><span class="${transformationClass}">${finalTransformations}</span><span class="${imageIdClass}">${finalImageId}</span>
     `;
   },
 
