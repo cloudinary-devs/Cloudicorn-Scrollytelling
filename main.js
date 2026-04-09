@@ -517,7 +517,7 @@ const CloudinaryEngine = {
     
     d3.select(imgElement)
       .attr('srcset', srcset)
-      .attr('sizes', '(max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+      .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
       .attr('src', urls.medium);
   },
 
