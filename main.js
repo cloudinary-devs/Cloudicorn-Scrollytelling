@@ -518,6 +518,9 @@ const CloudinaryEngine = {
     d3.select(imgElement)
       .attr('srcset', srcset)
       .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+      .attr('width', 813)
+      .attr('height', 813)
+      .attr('loading', 'lazy')
       .attr('src', urls.medium);
   },
 
@@ -688,7 +691,7 @@ const ImageTransitions = {
       
       d3.select(imgElement)
         .attr('srcset', srcset)
-        .attr('sizes', '(max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+        .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
         .attr('width', 813)
         .attr('height', 813)
         .attr('loading', 'lazy')
@@ -712,7 +715,10 @@ const ImageTransitions = {
           
           d3.select(imgElement)
             .attr('srcset', srcset)
-            .attr('sizes', '(max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+            .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+            .attr('width', 813)
+            .attr('height', 813)
+            .attr('loading', 'lazy')
             .attr('src', urls.medium);
           
           d3.select(imgElement)
