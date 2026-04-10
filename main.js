@@ -503,10 +503,10 @@ const CloudinaryEngine = {
     const { BASE_URL, IMAGE_ID } = CONFIG.CLOUDINARY;
     
     return {
-      small: `${BASE_URL}/${baseTransform}w_300,dpr_auto,f_auto,q_auto/${IMAGE_ID}`,
-      medium: `${BASE_URL}/${baseTransform}w_600,dpr_auto,f_auto,q_auto/${IMAGE_ID}`,
-      large: `${BASE_URL}/${baseTransform}w_900,dpr_auto,f_auto,q_auto/${IMAGE_ID}`,
-      xlarge: `${BASE_URL}/${baseTransform}w_1200,dpr_auto,f_auto,q_auto/${IMAGE_ID}`
+      small: `${BASE_URL}/${baseTransform}w_300/${IMAGE_ID}`,
+      medium: `${BASE_URL}/${baseTransform}w_600/${IMAGE_ID}`,
+      large: `${BASE_URL}/${baseTransform}w_900/${IMAGE_ID}`,
+      xlarge: `${BASE_URL}/${baseTransform}w_1200/${IMAGE_ID}`
     };
   },
 
@@ -517,7 +517,10 @@ const CloudinaryEngine = {
     
     d3.select(imgElement)
       .attr('srcset', srcset)
-      .attr('sizes', '(max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+      .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+      .attr('width', 813)
+      .attr('height', 813)
+      .attr('loading', 'lazy')
       .attr('src', urls.medium);
   },
 
@@ -559,7 +562,7 @@ const URLBreakdown = {
       baseUrlClass = 'text-blue-400',
       transformationClass = 'text-black bg-yellow-300 font-semibold rounded-md px-1',
       imageIdClass = 'text-blue-400',
-      baseUrlText = 'https://res.cloudinary.com/jens-demos/image/upload/',
+      baseUrlText = 'https://res.cloudinary.com/jen-demos/image/upload/',
       imageIdText = '/floating-cloudicorn.png',
       transformationText = 'f_auto/q_auto'
     } = options;
@@ -569,9 +572,7 @@ const URLBreakdown = {
     const finalTransformations = transformations || transformationText;
     
     return `
-      <span class="${baseUrlClass}">${finalBaseUrl}</span>
-      <span class="${transformationClass}">${finalTransformations}</span>
-      <span class="${imageIdClass}">${finalImageId}</span>
+      <span class="${baseUrlClass}">${finalBaseUrl}</span><span class="${transformationClass}">${finalTransformations}</span><span class="${imageIdClass}">${finalImageId}</span>
     `;
   },
 
@@ -690,7 +691,10 @@ const ImageTransitions = {
       
       d3.select(imgElement)
         .attr('srcset', srcset)
-        .attr('sizes', '(max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+        .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+        .attr('width', 813)
+        .attr('height', 813)
+        .attr('loading', 'lazy')
         .transition()
         .duration(800)
         .style('opacity', 1)
@@ -711,7 +715,10 @@ const ImageTransitions = {
           
           d3.select(imgElement)
             .attr('srcset', srcset)
-            .attr('sizes', '(max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+            .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+            .attr('width', 813)
+            .attr('height', 813)
+            .attr('loading', 'lazy')
             .attr('src', urls.medium);
           
           d3.select(imgElement)
