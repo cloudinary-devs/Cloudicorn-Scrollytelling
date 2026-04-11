@@ -38,12 +38,13 @@ const CONFIG = {
    * Override with <meta name="challenge-submit-endpoint" content="..."> if needed.
    */
   PRIZE_CHALLENGE: {
-    DEFAULT_EVENT: 'demo',
+    DEFAULT_EVENT: 'DevWorld2026',
     /** Default POST target (relative works on Netlify and in `netlify dev`). */
     SUBMIT_ENDPOINT: '/.netlify/functions/submit-challenge',
     EVENT_LABELS: {
-      demo: 'Local / demo',
-      wearedevs2026: 'We Are Developers 2026'
+      devworld: 'DevWorld',
+      demo: 'Local / dev (legacy)',
+      wearedevs2026: 'WeAreDevs2026'
     },
     TASKS: [
       {
