@@ -121,6 +121,16 @@ const CHALLENGE_VALIDATORS = {
 const ChallengeLab = {
   state: { valid: [false, false] },
 
+  updatePrizeLabVisibility: () => {
+    const lab = document.getElementById('prize-lab');
+    if (!lab) return;
+    if (URLUtils.hasParameter('challenge', 'true')) {
+      lab.classList.remove('hidden');
+    } else {
+      lab.classList.add('hidden');
+    }
+  },
+
   getSubmitEndpoint: () => {
     const meta = document.querySelector('meta[name="challenge-submit-endpoint"]');
     if (meta && meta.content && meta.content.trim()) return meta.content.trim();
@@ -1204,6 +1214,7 @@ const SiteNavigation = {
 
   applyDeepLinksFromUrl: () => {
     QuizSystem.updateQuizSectionVisibility();
+    ChallengeLab.updatePrizeLabVisibility();
     ChallengeLab.syncEventDisplay();
     requestAnimationFrame(() => {
       if (URLUtils.hasParameter('quiz', 'true')) {
@@ -1218,6 +1229,7 @@ const SiteNavigation = {
     if (e) e.preventDefault();
     URLUtils.setSearchParams({ quiz: 'true', challenge: null, event: null });
     QuizSystem.updateQuizSectionVisibility();
+    ChallengeLab.updatePrizeLabVisibility();
     SiteNavigation.scrollToId('quiz-section');
   },
 
@@ -1230,6 +1242,7 @@ const SiteNavigation = {
         : CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT;
     URLUtils.setSearchParams({ challenge: 'true', quiz: null, event: ev });
     QuizSystem.updateQuizSectionVisibility();
+    ChallengeLab.updatePrizeLabVisibility();
     ChallengeLab.syncEventDisplay();
     SiteNavigation.scrollToId('prize-lab');
   },

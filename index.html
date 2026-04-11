@@ -127,7 +127,7 @@
     </div>
 
     <!-- Prize challenge lab (manual URLs + spreadsheet submit) -->
-    <div id="prize-lab" class="bg-gradient-to-br from-indigo-950 via-gray-900 to-black text-white py-20 relative z-10 scroll-mt-20 border-y border-indigo-500/30">
+    <div id="prize-lab" class="hidden bg-gradient-to-br from-indigo-950 via-gray-900 to-black text-white py-20 relative z-10 scroll-mt-20 border-y border-indigo-500/30">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-10">
           <h2 class="text-3xl md:text-4xl font-bold mb-3">Prize challenge lab</h2>
@@ -307,14 +307,9 @@
       </div>
     </div>
 
-    <!-- Cloudinary Quiz Section -->
-    <div class="bg-gradient-to-br from-purple-900 to-black text-white py-20 relative z-10 scroll-mt-20">
+    <!-- Cloudinary Quiz Section (shown when Quiz nav / ?quiz=true) -->
+    <div id="quiz-section" class="hidden bg-gradient-to-br from-purple-900 to-black text-white py-20 relative z-10 scroll-mt-20">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-
-
-        <!-- Quiz Container (Hidden initially) -->
-        <div id="quiz-section" class="hidden relative scroll-mt-20">
-          
           <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold mb-4">Cloudinary Transformation Quiz</h2>
             <p class="text-lg text-gray-300 mb-8">Test your knowledge!</p>
@@ -481,12 +476,8 @@
               <button id="retake-quiz" class="hidden px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors">
                 Take Quiz Again
               </button>
-            
-
+            </div>
           </div>
-        </div>
-
-
       </div>
     </div>
   </main>
