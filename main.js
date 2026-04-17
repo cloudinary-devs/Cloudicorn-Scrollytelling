@@ -41,8 +41,6 @@ const CONFIG = {
     DEFAULT_EVENT: 'DevWorld2026',
     /** Delivery public ID for prize lab URLs (sample lifestyle asset; not the demo Cloudicorn). */
     PUBLIC_ID: 'main-sample.png',
-    /** Version segment in delivery URLs for the prize asset. */
-    UPLOAD_VERSION: 'v1760719129',
     /** Default POST target (relative works on Netlify and in `netlify dev`). */
     SUBMIT_ENDPOINT: '/.netlify/functions/submit-challenge',
     EVENT_LABELS: {
@@ -250,9 +248,8 @@ const ChallengeLab = {
   /** Base delivery URL (no transforms) — prize lab sample asset; users insert transforms after /upload/. */
   renderStarterUrl: () => {
     const { BASE_URL } = CONFIG.CLOUDINARY;
-    const { PUBLIC_ID, UPLOAD_VERSION } = CONFIG.PRIZE_CHALLENGE;
-    const ver = UPLOAD_VERSION ? `${UPLOAD_VERSION}/` : '';
-    const url = `${BASE_URL}/${ver}${PUBLIC_ID}`;
+    const { PUBLIC_ID } = CONFIG.PRIZE_CHALLENGE;
+    const url = `${BASE_URL}/${PUBLIC_ID}`;
     const el = document.getElementById('prize-starter-url');
     if (el) el.textContent = url;
     const hero = document.getElementById('prize-challenge-hero-image');
