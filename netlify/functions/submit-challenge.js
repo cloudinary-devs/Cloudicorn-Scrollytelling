@@ -1,7 +1,7 @@
 /**
  * Netlify Function: validate prize challenge URLs and append a row to Google Sheets.
  * Env: GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY, CHALLENGE_SHEET_ID, CHALLENGE_SHEET_TAB
- * Must match client CONFIG.PRIZE_CHALLENGE / CONFIG.CLOUDINARY in main.js.
+ * Must match client CONFIG.PRIZE_CHALLENGE.PUBLIC_ID / cloud in main.js.
  */
 
 const fs = require('fs');
@@ -30,7 +30,7 @@ const dotenv = require('dotenv');
 const { google } = require('googleapis');
 
 const CLOUD = 'jen-demos';
-const IMAGE_ID = 'floating-cloudicorn.png';
+const IMAGE_ID = 'main-sample.png';
 
 const VALIDATORS = {
   generativeBackgroundReplacePrompt: (n) =>
@@ -72,14 +72,14 @@ function extractChainFromUrl(urlString) {
     }
     const uploadIdx = parts.indexOf('upload');
     if (uploadIdx < 0) return { ok: false, error: 'Missing upload path' };
-    let rest = parts.slice(uploadIdx + 1);
-    if (rest[0] && /^v\d+$/.test(rest[0])) rest = rest.slice(1);
-    if (rest.length < 2) return { ok: false, error: 'Incomplete URL' };
+    const rest = parts.slice(uploadIdx + 1);
+    if (rest.length < 1) return { ok: false, error: 'Incomplete URL' };
     const lastSeg = rest[rest.length - 1];
     if (lastSeg.toLowerCase() !== IMAGE_ID.toLowerCase()) {
       return { ok: false, error: 'Wrong public ID' };
     }
-    const chain = rest.slice(0, -1).join('/');
+    const beforeFile = rest.slice(0, -1);
+    const chain = beforeFile.filter((seg) => seg && !/^v\d+$/i.test(seg)).join('/');
     return { ok: true, chain };
   } catch {
     return { ok: false, error: 'Invalid URL' };
@@ -217,31 +217,25 @@ exports.handler = async (event) => {
   }
 
   const eventSlug = typeof body.event === 'string' ? body.event.trim() : '';
-  const firstName = typeof body.firstName === 'string' ? body.firstName.trim() : '';
-  const lastName = typeof body.lastName === 'string' ? body.lastName.trim() : '';
-  const emailAddr = typeof body.email === 'string' ? body.email.trim() : '';
+  let fullName = typeof body.fullName === 'string' ? body.fullName.trim() : '';
+  if (!fullName && typeof body.firstName === 'string' && typeof body.lastName === 'string') {
+    fullName = `${body.firstName.trim()} ${body.lastName.trim()}`.trim();
+  }
+  const cloudName =
+    typeof body.cloudName === 'string' ? body.cloudName.trim() : '';
   const url1 = typeof body.url1 === 'string' ? body.url1.trim() : '';
   const url2 = typeof body.url2 === 'string' ? body.url2.trim() : '';
   const eventName =
     typeof body.eventName === 'string' ? body.eventName.trim() : eventSlug;
 
-  if (!eventSlug || !firstName || !lastName || !emailAddr || !url1 || !url2) {
+  if (!eventSlug || !fullName || !url1 || !url2) {
     return {
       statusCode: 400,
       headers,
       body: JSON.stringify({
         ok: false,
-        error:
-          'Missing required fields: event, firstName, lastName, email, url1, url2'
+        error: 'Missing required fields: event, fullName, url1, url2'
       })
-    };
-  }
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr)) {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ ok: false, error: 'Invalid email' })
     };
   }
 
@@ -288,7 +282,7 @@ exports.handler = async (event) => {
     const authClient = await auth.getClient();
     const sheets = google.sheets({ version: 'v4', auth: authClient });
     const ts = new Date().toISOString();
-    const range = sheetRangeA1(tab, 'A:H');
+    const range = sheetRangeA1(tab, 'A:G');
     await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
       range,
@@ -299,9 +293,8 @@ exports.handler = async (event) => {
             ts,
             eventSlug,
             eventName,
-            firstName,
-            lastName,
-            emailAddr,
+            fullName,
+            cloudName,
             url1,
             url2
           ]

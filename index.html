@@ -16,13 +16,17 @@
         <div class="flex items-center min-w-0 flex-1 md:flex-none">
           <h1 class="text-base sm:text-xl font-bold text-white truncate">The Great Space Chase by Cloudinary</h1>
         </div>
-        <nav class="flex items-center gap-1.5 sm:gap-2 order-3 md:order-none w-full md:w-auto justify-center md:justify-end" aria-label="Activities and prizes">
+        <nav class="flex items-center gap-1 sm:gap-2 order-3 md:order-none w-full md:w-auto justify-center md:justify-end" aria-label="Demo, quiz, and prizes">
+          <button type="button" data-nav-action="demo"
+                  class="inline-flex items-center justify-center rounded-lg border border-emerald-400/60 bg-emerald-600/40 px-2 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-emerald-600/70 active:bg-emerald-600 min-h-[44px] sm:min-h-0 flex-1 sm:flex-none sm:max-w-none">
+            Demo
+          </button>
           <button type="button" data-nav-action="quiz"
-                  class="inline-flex items-center justify-center rounded-lg border border-purple-400/60 bg-purple-600/40 px-2.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-purple-600/70 active:bg-purple-600 min-h-[44px] sm:min-h-0 flex-1 sm:flex-none max-w-[50%] sm:max-w-none">
+                  class="inline-flex items-center justify-center rounded-lg border border-purple-400/60 bg-purple-600/40 px-2 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-purple-600/70 active:bg-purple-600 min-h-[44px] sm:min-h-0 flex-1 sm:flex-none sm:max-w-none">
             Quiz 4 swag
           </button>
           <button type="button" data-nav-action="challenge" data-event="devworld"
-                  class="inline-flex items-center justify-center rounded-lg border border-blue-400/60 bg-blue-600/40 px-2.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-blue-600/70 active:bg-blue-600 min-h-[44px] sm:min-h-0 flex-1 sm:flex-none max-w-[50%] sm:max-w-none">
+                  class="inline-flex items-center justify-center rounded-lg border border-blue-400/60 bg-blue-600/40 px-2 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-blue-600/70 active:bg-blue-600 min-h-[44px] sm:min-h-0 flex-1 sm:flex-none sm:max-w-none">
             Prize challenge
           </button>
         </nav>
@@ -36,18 +40,6 @@
             </svg>
           </a>
         </div>
-       <!-- <nav class="hidden md:flex space-x-8">
-          <a href="#" class="hover:text-gray-700 text-white px-3 py-2 text-sm font-medium transition-colors">Home</a>
-          <a href="#" class="hover:text-gray-700 text-white px-3 py-2 text-sm font-medium transition-colors">About</a>
-          <a href="#" class="hover:text-gray-700 text-white px-3 py-2 text-sm font-medium transition-colors">Contact</a>
-        </nav>
-        <div class="md:hidden">
-          <button class="hover:text-gray-700 text-white transition-colors">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>-->
       </div>
     </div>
   </header>
@@ -57,49 +49,21 @@
     <!-- Starfield Canvas -->
     <canvas id="starfield" class="fixed inset-0 pointer-events-none z-0"></canvas>
     
-    <!-- Welcome Message -->
-    <div class="bg-gradient-to-br from-black to-purple-900 text-white py-20 relative z-10 border-b border-gray-700">
-      <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-        <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-pulse">
-          Cloudicorns in Space!
-        </h1>
-        
-        <div class="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">
-          <p class="mb-4">This Cloudicorn is going on an adventure! Join them on an interstellar journey through the cosmos. As you scroll, watch as our ethereal friend transforms through the power of Cloudinary's magical image processing.</p>
-          <p class="mb-6">Brought to you by your friends in Cloudinary's Developer Relations Team</p>
-        </div>
-        
-        <!-- Initial Unoptimized Image Display -->
-        <div class="mt-12 mb-8">
-          <div class="max-w-2xl mx-auto">
-            <div class="bg-gray-800/30 rounded-xl p-6 mb-4">
-              <h3 class="text-xl font-semibold text-white mb-4">"I'm just a Cloudicorn, trying to float in space. But I feel kind of heavy! Help me fly!"</h3>
-              <div class="relative">
-                <img src="https://res.cloudinary.com/jen-demos/image/upload/floating-cloudicorn.png" 
-                     alt="Unoptimized Cloudicorn" 
-                     class="w-full rounded-lg object-cover mb-4">
-                <div class="text-sm text-gray-400 space-y-2">
-                  <p><strong>Original Size:</strong> 726 KB</p>
-                  <p><strong>Dimensions:</strong> 813×813 pixels</p>
-                  <p><strong>Format:</strong> PNG</p>
-                  <p><strong>Status:</strong> 🐌 Needs Cloudinary's auto-optimization</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flex flex-col items-center space-y-4">
-          <span class="text-lg text-gray-400">Scroll to help me float!</span>
-          <div class="animate-bounce">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-            </svg>
-          </div>
+    <!-- Landing: quote + image only until Demo -->
+    <div id="landing-hero" class="bg-gradient-to-br from-black to-purple-900 text-white py-16 md:py-24 relative z-10 border-b border-gray-700 min-h-[60vh] flex flex-col justify-center">
+      <div class="max-w-lg mx-auto text-center px-4 sm:px-6 lg:px-8">
+        <p class="text-xl md:text-2xl font-semibold text-white leading-relaxed mb-8">
+          "I'm just a Cloudicorn, trying to float in space. But I feel kind of heavy! Help me fly!"
+        </p>
+        <div class="rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+          <img src="https://res.cloudinary.com/jen-demos/image/upload/floating-cloudicorn.png"
+               alt="Cloudicorn floating in space"
+               class="w-full object-cover aspect-square sm:aspect-auto">
         </div>
       </div>
     </div>
 
+    <div id="demo-scrolly" class="hidden scroll-mt-20">
     <div id="scrolly-columns" class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <!-- Responsive Layout -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
@@ -129,34 +93,39 @@
     <!-- Prize challenge lab (manual URLs + spreadsheet submit) -->
     <div id="prize-lab" class="hidden bg-gradient-to-br from-indigo-950 via-gray-900 to-black text-white py-20 relative z-10 scroll-mt-20 border-y border-indigo-500/30">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-10">
-          <h2 class="text-3xl md:text-4xl font-bold mb-3">Prize challenge lab</h2>
-          <p class="text-lg text-gray-300 mb-4">Build two full delivery URLs using <strong class="text-white font-semibold">Cloudinary generative AI</strong>: first <strong class="text-white">generative background replace</strong> with a text prompt, then <strong class="text-white">generative replace</strong> with <code class="text-purple-300 bg-gray-800/80 px-1 rounded text-sm">from</code> / <code class="text-purple-300 bg-gray-800/80 px-1 rounded text-sm">to</code> prompts. Chain with <code class="text-purple-300 bg-gray-800/80 px-1 rounded text-sm">f_auto</code> and <code class="text-purple-300 bg-gray-800/80 px-1 rounded text-sm">q_auto</code>, then paste below. The playground further down does not count until you paste here.</p>
+       
 
+        <div class="text-center mb-10">
+          <h2 class="text-3xl md:text-4xl font-bold mb-3">🧪 Prize challenge lab</h2>
+          <p class="text-lg text-gray-300 mb-4">Your Challenge: Edit this image's url to create two new tranformations for a chance to win!</p>
+
+          <figure class="mb-10 max-w-xl mx-auto text-center">
+            <img id="prize-challenge-hero-image" src="" alt=""
+              class="w-full rounded-xl border border-indigo-500/50 shadow-2xl shadow-indigo-950/50 object-cover bg-gray-900/40" width="800" height="800" loading="lazy" decoding="async">
+           
+          </figure>
+          
           <div class="mb-8 rounded-xl border border-indigo-500/40 bg-gray-900/60 p-4 sm:p-5 text-left max-w-3xl mx-auto">
-            <p class="text-sm font-medium text-indigo-200 mb-2">Copy this starter URL, then insert your transformation chain after <code class="text-purple-300">/upload/</code> and before <code class="text-purple-300">floating-cloudicorn.png</code>.</p>
+            <p class="text-sm font-medium text-indigo-200 mb-2">Copy this image's URL and paste it into the text areas below to create two new transformations.</p>
             <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
               <code id="prize-starter-url" class="block flex-1 break-all rounded-lg bg-black/50 px-3 py-3 text-xs sm:text-sm font-mono text-emerald-300/95 leading-relaxed border border-gray-700"></code>
               <button type="button" id="prize-copy-starter-url"
                 class="shrink-0 inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 min-h-[44px] sm:min-w-[7rem]">
-                Copy URL
+                Copy
               </button>
             </div>
             <p id="prize-copy-starter-feedback" class="text-xs text-green-400 mt-2 min-h-[1rem]" aria-live="polite"></p>
           </div>
 
-          <p class="text-sm text-indigo-200 mb-8">
-            Event: <span id="prize-event-display" class="font-semibold text-white">—</span>
-          </p>
+         
         </div>
 
         <div class="space-y-10">
           <!-- Task 1 -->
           <div class="bg-gray-800/40 border border-gray-600/50 rounded-xl p-6">
             <h3 id="prize-task-1-title" class="text-xl font-semibold text-white mb-2"></h3>
-            <p id="prize-task-1-desc" class="text-gray-300 text-sm mb-3"></p>
-            <a id="prize-task-1-docs" href="#" class="text-sm text-purple-300 underline hover:text-white mb-4 inline-block" target="_blank" rel="noopener noreferrer">Open docs</a>
-            <label for="prize-url-1" class="block text-sm font-medium text-gray-300 mb-2">Full URL</label>
+            <div id="prize-task-1-desc" class="text-gray-300 text-sm mb-3"></div>
+            <a id="prize-task-1-docs" href="#" class="text-sm text-purple-300 underline hover:text-white mb-4 inline-block" target="_blank" rel="noopener noreferrer">Help!</a>
             <textarea id="prize-url-1" rows="3" placeholder="https://res.cloudinary.com/..."
               class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"></textarea>
             <div class="flex flex-wrap items-center gap-3 mt-3">
@@ -175,9 +144,8 @@
           <!-- Task 2 -->
           <div class="bg-gray-800/40 border border-gray-600/50 rounded-xl p-6">
             <h3 id="prize-task-2-title" class="text-xl font-semibold text-white mb-2"></h3>
-            <p id="prize-task-2-desc" class="text-gray-300 text-sm mb-3"></p>
-            <a id="prize-task-2-docs" href="#" class="text-sm text-purple-300 underline hover:text-white mb-4 inline-block" target="_blank" rel="noopener noreferrer">Open docs</a>
-            <label for="prize-url-2" class="block text-sm font-medium text-gray-300 mb-2">Full URL</label>
+            <div id="prize-task-2-desc" class="text-gray-300 text-sm mb-3"></div>
+            <a id="prize-task-2-docs" href="#" class="text-sm text-purple-300 underline hover:text-white mb-4 inline-block" target="_blank" rel="noopener noreferrer">Help!</a>
             <textarea id="prize-url-2" rows="3" placeholder="https://res.cloudinary.com/..."
               class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"></textarea>
             <div class="flex flex-wrap items-center gap-3 mt-3">
@@ -195,117 +163,32 @@
 
           <!-- Submit -->
           <div class="bg-indigo-900/30 border border-indigo-500/40 rounded-xl p-6">
-            <form id="prize-challenge-form" class="space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-                <div>
-                  <label for="prize-first-name" class="block text-sm font-medium text-gray-300 mb-2">First name <span class="text-red-400">*</span></label>
-                  <input type="text" id="prize-first-name" name="firstName" required autocomplete="given-name" placeholder="Ada"
-                    class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                </div>
-                <div>
-                  <label for="prize-last-name" class="block text-sm font-medium text-gray-300 mb-2">Last name <span class="text-red-400">*</span></label>
-                  <input type="text" id="prize-last-name" name="lastName" required autocomplete="family-name" placeholder="Lovelace"
-                    class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                </div>
+            <form id="prize-challenge-form" class="space-y-4 max-w-2xl">
+              <div>
+                <label for="prize-full-name" class="block text-sm font-medium text-gray-300 mb-2">Full name <span class="text-red-400">*</span></label>
+                <input type="text" id="prize-full-name" name="fullName" required autocomplete="name" placeholder="Ada Lovelace"
+                  class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
               <div>
-                <label for="prize-email" class="block text-sm font-medium text-gray-300 mb-2">Email <span class="text-red-400">*</span> (for prize contact)</label>
-                <input type="email" id="prize-email" name="email" required autocomplete="email" placeholder="you@example.com"
-                  class="w-full max-w-md px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <label for="prize-cloud-name" class="block text-sm font-medium text-gray-300 mb-2">Cloudinary cloud name <span class="text-gray-500 font-normal">(optional)</span></label>
+                <p class="text-xs text-gray-500">Special opportunity to get extra credits for users with existing or new cloud names. Login to your Cloudinary console and paste in the cloud name to be eligible for this credits boost.</p>
+              
+                <input type="text" id="prize-cloud-name" name="cloudName" autocomplete="off" placeholder="e.g. jen-demos"
+                  class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
-              <p class="text-xs text-gray-500">Your validated task URLs above are sent with this submission.</p>
+              <p class="text-xs text-gray-500">Your validated task URLs above are sent with this submission. <span class="sample-transform-hint">You must be present at the booth when we draw the winner to win this prize!</span> We do not retain any data from this form after this event.</p>
               <button type="submit" id="prize-submit" disabled
                 class="px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold min-h-[44px] disabled:opacity-40 disabled:cursor-not-allowed">
                 Submit entries
               </button>
             </form>
-            <p id="prize-submit-hint" class="text-xs text-gray-500 mt-2"></p>
             <p id="prize-submit-status" class="text-sm mt-2 min-h-[1.25rem]"></p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Interactive Transformation Section -->
-    <div id="challenge-section" class="bg-gradient-to-br from-gray-900 to-purple-900 text-white py-20 relative z-10 scroll-mt-20">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl md:text-4xl font-bold mb-4">Now it's your turn!</h2>
-          <p class="text-lg text-gray-300 mb-8">Experiment with Cloudinary transformations. Enter your parameters below and see the magic happen!</p>
-         
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          <!-- Input Section -->
-          <div class="space-y-6">
-            <div>
-              <label for="transformation-input" class="block text-sm font-medium text-gray-300 mb-2">
-                Cloudinary Transformation Parameters
-              </label>
-              <textarea 
-                id="transformation-input" 
-                rows="4" 
-                class="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-              ></textarea>
-  
-            </div>
-            
-            <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-gray-200">Examples:</h3>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button class="example-btn px-3 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600 rounded text-sm text-gray-300 transition-colors" 
-                        data-transform="co_darkviolet,e_colorize:50/f_auto/q_auto">
-                  Purple Haze
-                </button>
-                <button class="example-btn px-3 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600 rounded text-sm text-gray-300 transition-colors" 
-                        data-transform="e_gradient_fade:symmetric:10,x_0.2,y_0.4/f_auto/q_auto">
-                  Fade Away
-                </button>
-                <button class="example-btn px-3 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600 rounded text-sm text-gray-300 transition-colors" 
-                        data-transform="e_grayscale/f_auto/q_auto">
-                  Gray Scale
-                </button>
-                <button class="example-btn px-3 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600 rounded text-sm text-gray-300 transition-colors" 
-                        data-transform="e_blur:500/f_auto/q_auto">
-                  Peace Out
-                </button>
-               
-      
-              </div>
-            </div>         
-            
-            <div>
-              <button id="apply-transform" class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105">
-                Apply Transformation
-              </button>
-            </div>
-            
-            <div class="bg-gray-800/30 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-gray-300 mb-2">Generated URL:</h4>
-              <div id="generated-url-breakdown" class="text-sm sm:text-base bg-gray-900/50 px-2 py-1 rounded block leading-relaxed"></div>
-            </div>
-          </div>
-          
-          <!-- Result Image -->
-          <div class="flex flex-col items-center">
-            <div class="w-full max-w-sm relative">
-              <img id="custom-image" 
-                   alt="Custom Transformation Result" 
-                   class="w-full rounded-xl object-cover shadow-lg">
-              <!-- Loader overlay -->
-              <div id="custom-image-loader" class="absolute inset-0 bg-gray-900/80 rounded-xl flex items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-none">
-                <div class="text-center">
-                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-                </div>
-              </div>
-            </div>
-            <div class="mt-4 text-center">
-              <p class="text-sm text-gray-400">Your transformation will appear here</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+   
 
     <!-- Cloudinary Quiz Section (shown when Quiz nav / ?quiz=true) -->
     <div id="quiz-section" class="hidden bg-gradient-to-br from-purple-900 to-black text-white py-20 relative z-10 scroll-mt-20">
@@ -485,19 +368,21 @@
   <!-- Footer -->
   <footer class="bg-gray-900 text-white py-12 mt-32">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <nav class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-8" aria-label="Activities and prizes">
+      <nav class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 mb-8" aria-label="Demo, quiz, and prizes">
+        <button type="button" data-nav-action="demo"
+                class="inline-flex items-center justify-center rounded-lg border border-emerald-400/50 bg-emerald-700/50 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 min-w-[160px] min-h-[44px]">
+          Demo
+        </button>
         <button type="button" data-nav-action="quiz"
-                class="inline-flex items-center justify-center rounded-lg border border-purple-400/50 bg-purple-700/50 px-4 py-3 text-sm font-semibold text-white hover:bg-purple-600 min-w-[200px] min-h-[44px]">
+                class="inline-flex items-center justify-center rounded-lg border border-purple-400/50 bg-purple-700/50 px-4 py-3 text-sm font-semibold text-white hover:bg-purple-600 min-w-[160px] min-h-[44px]">
           Quiz 4 swag
         </button>
         <button type="button" data-nav-action="challenge" data-event="devworld"
-                class="inline-flex items-center justify-center rounded-lg border border-blue-400/50 bg-blue-700/50 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-600 min-w-[200px] min-h-[44px]">
+                class="inline-flex items-center justify-center rounded-lg border border-blue-400/50 bg-blue-700/50 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-600 min-w-[160px] min-h-[44px]">
           Prize challenge
         </button>
       </nav>
-      <p class="text-center text-xs text-gray-500 mb-4 max-w-xl mx-auto px-2">
-        Shareable links: <code class="text-purple-300 bg-gray-800/80 px-1 rounded">?quiz=true</code> for the quiz, or <code class="text-blue-300 bg-gray-800/80 px-1 rounded">?challenge=true&amp;event=your-slug</code> for the prize lab (set per-booth <code class="text-gray-400">data-event</code> on buttons).
-      </p>
+     
       <div class="text-center">
         <p class="text-gray-400">&copy; <script>document.write(new Date().getFullYear());</script> Cloudinary. Built with D3 and Tailwind.</p>
       </div>
@@ -507,14 +392,18 @@
   <!-- Mobile thumb dock (mirrors header actions) -->
   <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-purple-500/40 bg-gray-950/95 backdrop-blur-md px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.35)]"
        role="navigation" aria-label="Quick actions">
-    <div class="flex gap-2 max-w-lg mx-auto">
+    <div class="flex gap-1.5 max-w-2xl mx-auto">
+      <button type="button" data-nav-action="demo"
+              class="flex-1 inline-flex items-center justify-center rounded-lg border border-emerald-400/50 bg-emerald-700/60 px-2 py-3 text-xs font-semibold text-white active:bg-emerald-600 min-h-[48px]">
+        Demo
+      </button>
       <button type="button" data-nav-action="quiz"
-              class="flex-1 inline-flex items-center justify-center rounded-lg border border-purple-400/50 bg-purple-700/60 px-3 py-3 text-sm font-semibold text-white active:bg-purple-600 min-h-[48px]">
-        Quiz 4 swag
+              class="flex-1 inline-flex items-center justify-center rounded-lg border border-purple-400/50 bg-purple-700/60 px-2 py-3 text-xs font-semibold text-white active:bg-purple-600 min-h-[48px]">
+        Quiz
       </button>
       <button type="button" data-nav-action="challenge" data-event="devworld"
-              class="flex-1 inline-flex items-center justify-center rounded-lg border border-blue-400/50 bg-blue-700/60 px-3 py-3 text-sm font-semibold text-white active:bg-blue-600 min-h-[48px]">
-        Prize challenge
+              class="flex-1 inline-flex items-center justify-center rounded-lg border border-blue-400/50 bg-blue-700/60 px-2 py-3 text-xs font-semibold text-white active:bg-blue-600 min-h-[48px]">
+        Prize
       </button>
     </div>
   </div>

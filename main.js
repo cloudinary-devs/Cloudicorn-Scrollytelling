@@ -7,7 +7,7 @@
 // ============================================================================
 
 const CONFIG = {
-  // Cloudinary configuration
+  // Cloudinary configuration (demo / scrolly / quiz — Cloudicorn asset)
   CLOUDINARY: {
     BASE_URL: 'https://res.cloudinary.com/jen-demos/image/upload',
     IMAGE_ID: 'floating-cloudicorn.png'
@@ -39,6 +39,10 @@ const CONFIG = {
    */
   PRIZE_CHALLENGE: {
     DEFAULT_EVENT: 'DevWorld2026',
+    /** Delivery public ID for prize lab URLs (sample lifestyle asset; not the demo Cloudicorn). */
+    PUBLIC_ID: 'main-sample.png',
+    /** Version segment in delivery URLs for the prize asset. */
+    UPLOAD_VERSION: 'v1760719129',
     /** Default POST target (relative works on Netlify and in `netlify dev`). */
     SUBMIT_ENDPOINT: '/.netlify/functions/submit-challenge',
     EVENT_LABELS: {
@@ -50,18 +54,34 @@ const CONFIG = {
       {
         id: 'generativeBackgroundReplace',
         validator: 'generativeBackgroundReplacePrompt',
-        title: 'Task 1: Generative background replace (prompted)',
+        title: 'Task 1: Replace the background',
         description:
-          'Use generative background replace with a natural-language prompt (e.g. e_gen_background_replace:prompt_your%20idea). Your URL must include e_gen_background_replace, prompt_, f_auto, and q_auto. See “Using a prompt” in the docs.',
+          'Use generative background replace with a natural-language prompt (e.g. e_gen_background_replace:prompt_your%20idea). Your URL must include: e_gen_background_replace, prompt_, f_auto, and q_auto. See “Using a prompt” in the docs.',
+        descriptionHtml: `Use generative background replace with a natural-language prompt (e.g. <span class="sample-transform-hint">e_gen_background_replace:prompt_your%20idea</span>). Your URL must include:
+<ul class="list-disc list-inside mt-2 mb-2 space-y-1.5 text-gray-300">
+<li><span class="sample-transform-hint">e_gen_background_replace</span></li>
+<li><span class="sample-transform-hint">prompt_</span></li>
+<li><span class="sample-transform-hint">f_auto</span></li>
+<li><span class="sample-transform-hint">q_auto</span></li>
+</ul>
+See “Using a prompt” in the docs.`,
         docsUrl:
           'https://cloudinary.com/documentation/generative_ai_transformations#generative_background_replace'
       },
       {
         id: 'generativeReplace',
         validator: 'generativeReplacePrompt',
-        title: 'Task 2: Generative replace (prompted)',
+        title: 'Task 2: Replace an object',
         description:
-          'Use generative replace with explicit from and to prompts (e_gen_replace:from_…;to_…). Your URL must include e_gen_replace, both from_ and to_, plus f_auto and q_auto. Hint: try replacing the balloon.',
+          'Replace an object in this image using from and to prompts (e_gen_replace:from_…;to_…). Your URL must include e_gen_replace, both from_ and to_, plus f_auto and q_auto. Hint: pick a clear subject in the base image to replace.',
+        descriptionHtml: `Use generative replace with explicit from and to prompts (<span class="sample-transform-hint">e_gen_replace:from_…;to_…</span>). Your URL must include:
+<ul class="list-disc list-inside mt-2 mb-2 space-y-1.5 text-gray-300">
+<li><span class="sample-transform-hint">e_gen_replace</span></li>
+<li>both <span class="sample-transform-hint">from_</span> and <span class="sample-transform-hint">to_</span></li>
+<li><span class="sample-transform-hint">f_auto</span></li>
+<li><span class="sample-transform-hint">q_auto</span></li>
+</ul>
+Hint: pick a clear subject in the base image to replace.`,
         docsUrl:
           'https://cloudinary.com/documentation/generative_ai_transformations#generative_replace'
       }
@@ -158,7 +178,7 @@ const ChallengeLab = {
 
   extractChainFromUrl: (urlString) => {
     const cloud = ChallengeLab.getCloudName();
-    const publicFile = CONFIG.CLOUDINARY.IMAGE_ID;
+    const publicFile = CONFIG.PRIZE_CHALLENGE.PUBLIC_ID;
     try {
       const u = new URL(urlString.trim());
       if (!u.hostname.endsWith('cloudinary.com')) {
@@ -172,18 +192,16 @@ const ChallengeLab = {
       if (uploadIdx < 0) {
         return { ok: false, error: 'Path must include /image/upload/.' };
       }
-      let rest = parts.slice(uploadIdx + 1);
-      if (rest[0] && /^v\d+$/.test(rest[0])) {
-        rest = rest.slice(1);
-      }
-      if (rest.length < 2) {
-        return { ok: false, error: 'Missing transformations or public ID.' };
+      const rest = parts.slice(uploadIdx + 1);
+      if (rest.length < 1) {
+        return { ok: false, error: 'Missing public ID in URL.' };
       }
       const lastSeg = rest[rest.length - 1];
       if (lastSeg.toLowerCase() !== publicFile.toLowerCase()) {
         return { ok: false, error: `Public ID must be "${publicFile}".` };
       }
-      const chain = rest.slice(0, -1).join('/');
+      const beforeFile = rest.slice(0, -1);
+      const chain = beforeFile.filter((seg) => seg && !/^v\d+$/i.test(seg)).join('/');
       return { ok: true, chain };
     } catch {
       return { ok: false, error: 'Invalid URL.' };
@@ -215,7 +233,13 @@ const ChallengeLab = {
       const descEl = document.getElementById(`prize-task-${idx}-desc`);
       const docsEl = document.getElementById(`prize-task-${idx}-docs`);
       if (titleEl) titleEl.textContent = task.title;
-      if (descEl) descEl.textContent = task.description;
+      if (descEl) {
+        if (task.descriptionHtml) {
+          descEl.innerHTML = task.descriptionHtml;
+        } else {
+          descEl.textContent = task.description;
+        }
+      }
       if (docsEl && task.docsUrl) {
         docsEl.href = task.docsUrl;
         docsEl.classList.remove('hidden');
@@ -223,11 +247,19 @@ const ChallengeLab = {
     });
   },
 
-  /** Base delivery URL (no transforms) — same string users copy to extend with AI effects. */
+  /** Base delivery URL (no transforms) — prize lab sample asset; users insert transforms after /upload/. */
   renderStarterUrl: () => {
-    const url = CloudinaryEngine.generateUrl('');
+    const { BASE_URL } = CONFIG.CLOUDINARY;
+    const { PUBLIC_ID, UPLOAD_VERSION } = CONFIG.PRIZE_CHALLENGE;
+    const ver = UPLOAD_VERSION ? `${UPLOAD_VERSION}/` : '';
+    const url = `${BASE_URL}/${ver}${PUBLIC_ID}`;
     const el = document.getElementById('prize-starter-url');
     if (el) el.textContent = url;
+    const hero = document.getElementById('prize-challenge-hero-image');
+    if (hero) {
+      hero.src = url;
+      hero.alt = 'Base image for the prize challenge (add transformations before this filename in the URL)';
+    }
   },
 
   copyStarterUrl: async () => {
@@ -365,17 +397,14 @@ const ChallengeLab = {
       return;
     }
 
-    const firstNameEl = document.getElementById('prize-first-name');
-    const lastNameEl = document.getElementById('prize-last-name');
-    const emailEl = document.getElementById('prize-email');
-    const firstName = firstNameEl ? firstNameEl.value.trim() : '';
-    const lastName = lastNameEl ? lastNameEl.value.trim() : '';
-    const email = emailEl ? emailEl.value.trim() : '';
+    const fullNameEl = document.getElementById('prize-full-name');
+    const cloudNameEl = document.getElementById('prize-cloud-name');
+    const fullName = fullNameEl ? fullNameEl.value.trim() : '';
+    const cloudName = cloudNameEl ? cloudNameEl.value.trim() : '';
 
-    const simpleEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!simpleEmail.test(email)) {
+    if (!fullName) {
       if (statusEl) {
-        statusEl.textContent = 'Enter a valid email address.';
+        statusEl.textContent = 'Enter your full name.';
         statusEl.className = 'text-sm mt-2 text-red-400';
       }
       return;
@@ -416,9 +445,8 @@ const ChallengeLab = {
     const payload = {
       event: eventId,
       eventName: eventLabel,
-      firstName,
-      lastName,
-      email,
+      fullName,
+      cloudName,
       url1,
       url2
     };
@@ -1202,7 +1230,7 @@ const QuizSystem = {
 };
 
 // ============================================================================
-// SITE NAVIGATION (quiz / challenge deep links)
+// SITE NAVIGATION (demo / quiz / challenge deep links)
 // ============================================================================
 
 const SiteNavigation = {
@@ -1213,24 +1241,47 @@ const SiteNavigation = {
     }
   },
 
+  updateDemoScrollyVisibility: () => {
+    const el = document.getElementById('demo-scrolly');
+    if (!el) return;
+    if (URLUtils.hasParameter('demo', 'true')) {
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  },
+
   applyDeepLinksFromUrl: () => {
     QuizSystem.updateQuizSectionVisibility();
     ChallengeLab.updatePrizeLabVisibility();
+    SiteNavigation.updateDemoScrollyVisibility();
     ChallengeLab.syncEventDisplay();
     requestAnimationFrame(() => {
       if (URLUtils.hasParameter('quiz', 'true')) {
         SiteNavigation.scrollToId('quiz-section');
       } else if (URLUtils.hasParameter('challenge', 'true')) {
         SiteNavigation.scrollToId('prize-lab');
+      } else if (URLUtils.hasParameter('demo', 'true')) {
+        SiteNavigation.scrollToId('demo-scrolly');
       }
     });
   },
 
-  goToQuiz: (e) => {
+  goToDemo: (e) => {
     if (e) e.preventDefault();
-    URLUtils.setSearchParams({ quiz: 'true', challenge: null, event: null });
+    URLUtils.setSearchParams({ demo: 'true', quiz: null, challenge: null, event: null });
     QuizSystem.updateQuizSectionVisibility();
     ChallengeLab.updatePrizeLabVisibility();
+    SiteNavigation.updateDemoScrollyVisibility();
+    requestAnimationFrame(() => SiteNavigation.scrollToId('demo-scrolly'));
+  },
+
+  goToQuiz: (e) => {
+    if (e) e.preventDefault();
+    URLUtils.setSearchParams({ quiz: 'true', challenge: null, event: null, demo: null });
+    QuizSystem.updateQuizSectionVisibility();
+    ChallengeLab.updatePrizeLabVisibility();
+    SiteNavigation.updateDemoScrollyVisibility();
     SiteNavigation.scrollToId('quiz-section');
   },
 
@@ -1241,14 +1292,18 @@ const SiteNavigation = {
       raw !== undefined && String(raw).trim() !== ''
         ? String(raw).trim()
         : CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT;
-    URLUtils.setSearchParams({ challenge: 'true', quiz: null, event: ev });
+    URLUtils.setSearchParams({ challenge: 'true', quiz: null, demo: null, event: ev });
     QuizSystem.updateQuizSectionVisibility();
     ChallengeLab.updatePrizeLabVisibility();
+    SiteNavigation.updateDemoScrollyVisibility();
     ChallengeLab.syncEventDisplay();
     SiteNavigation.scrollToId('prize-lab');
   },
 
   init: () => {
+    document.querySelectorAll('[data-nav-action="demo"]').forEach((el) => {
+      el.addEventListener('click', SiteNavigation.goToDemo);
+    });
     document.querySelectorAll('[data-nav-action="quiz"]').forEach((el) => {
       el.addEventListener('click', SiteNavigation.goToQuiz);
     });

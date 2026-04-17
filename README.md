@@ -109,11 +109,11 @@ The **Prize challenge** control scrolls to `#prize-lab`, sets `?challenge=true`,
 
 Participants paste two full Cloudinary delivery URLs: **generative background replace with a `prompt_`**, and **generative replace** with **`from_` and `to_`**, each chained with `f_auto` and `q_auto`. Rules live in `CONFIG.PRIZE_CHALLENGE.TASKS` in [`main.js`](main.js) and are mirrored in [`netlify/functions/submit-challenge.js`](netlify/functions/submit-challenge.js). **Submit entries** stays disabled until both **Check URL** steps pass.
 
-**Client** `POST` JSON to `/.netlify/functions/submit-challenge` by default (`CONFIG.PRIZE_CHALLENGE.SUBMIT_ENDPOINT`), or override with `<meta name="challenge-submit-endpoint" content="https://...">`. Body shape: `{ event, eventName, firstName, lastName, email, url1, url2 }` (both validated task URLs included).
+**Client** `POST` JSON to `/.netlify/functions/submit-challenge` by default (`CONFIG.PRIZE_CHALLENGE.SUBMIT_ENDPOINT`), or override with `<meta name="challenge-submit-endpoint" content="https://...">`. Body shape: `{ event, eventName, fullName, cloudName?, url1, url2 }` (`cloudName` optional; both task URLs validated server-side).
 
 ### Netlify + Google Sheets
 
-1. Create a Google Sheet and a tab (e.g. `Submissions`). The function appends rows: `timestamp`, `event`, `eventName`, `firstName`, `lastName`, `email`, `url1`, `url2`.
+1. Create a Google Sheet and a tab (e.g. `Submissions`). The function appends rows: `timestamp`, `event`, `eventName`, `fullName`, `cloudName`, `url1`, `url2`.
 2. In Google Cloud, create a **service account**, enable **Google Sheets API**, and create a JSON key.
 3. **Share** the spreadsheet with the service account email (Editor).
 4. In **Netlify → Site configuration → Environment variables** set:

@@ -8,7 +8,7 @@ This document is an optional **client-only** flow: the prize lab POSTs JSON to a
 
 Add a header row, for example:
 
-| timestamp | event | eventName | firstName | lastName | email | url1 | url2 |
+| timestamp | event | eventName | fullName | cloudName | url1 | url2 |
 
 ## 2. Apps Script
 
@@ -29,9 +29,8 @@ function doPost(e) {
         'timestamp',
         'event',
         'eventName',
-        'firstName',
-        'lastName',
-        'email',
+        'fullName',
+        'cloudName',
         'url1',
         'url2'
       ]);
@@ -40,9 +39,8 @@ function doPost(e) {
       body.timestamp || '',
       body.event || '',
       body.eventName || '',
-      body.firstName || '',
-      body.lastName || '',
-      body.email || '',
+      body.fullName || '',
+      body.cloudName || '',
       body.url1 || '',
       body.url2 || ''
     ]);
@@ -86,13 +84,14 @@ The app sends:
 {
   "event": "wearedevs2026",
   "eventName": "We Are Developers 2026",
-  "firstName": "Ada",
-  "lastName": "Lovelace",
-  "email": "user@example.com",
+  "fullName": "Ada Lovelace",
+  "cloudName": "jen-demos",
   "url1": "https://res.cloudinary.com/...",
   "url2": "https://res.cloudinary.com/..."
 }
 ```
+
+`cloudName` is optional; omit the field or send `""` if not collected.
 
 ## 4. Event slug
 
