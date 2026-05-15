@@ -86,7 +86,7 @@ This demo showcases various Cloudinary transformations:
 
 - **Background Removal:** `e_background_removal`
 - **Generative Recolor:** `e_gen_recolor:prompt_goggles;to-color_red`
-- **Artistic Effects:** `e_art:aurora`
+- **Video:** `e_accelerate` (and other video transformations) on the Uni star clip in the scrolly demo
 - **Opacity Control:** `o_30`
 - **Generative Background Replace:** `e_gen_background_replace`
 - **Pixelation:** `e_pixelate:20`

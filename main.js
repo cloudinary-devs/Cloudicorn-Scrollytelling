@@ -19,9 +19,9 @@ const CONFIG = {
     /** Min correct answers for swag (4/5 = 80%). */
     PASSING_SCORE: 4,
     CORRECT_ANSWERS: {
-      q1: 'a', // e_cartoonify
-      q2: 'b', // e_brightness
-      q3: 'b', // Applies an aurora borealis effect to the image
+      q1: 'a', // f_auto / q_auto (first scrolly step — optimized delivery)
+      q2: 'b', // e_gen_recolor (Generative Colorize step)
+      q3: 'b', // r_30: 30px corner radius on the video frame (rounded square with c_fill)
       q4: 'c', // Using slashes
       q5: 'b'  // e_background_removal
     }
@@ -33,12 +33,20 @@ const CONFIG = {
     SCROLL_SPEED: 0.0003
   },
 
+  /** Scrolly video step: MP4 delivery (public id, version, cloud name). */
+  DEMO_HERO_VIDEO: {
+    CLOUD_NAME: 'jen-demos',
+    PUBLIC_ID: 'uni-star',
+    /** Upload version segment in delivery URLs. */
+    VIDEO_VERSION: 'v1778796156'
+  },
+
   /**
    * Prize challenge lab: manual URLs; submit via Netlify function → Google Sheets.
    * Override with <meta name="challenge-submit-endpoint" content="..."> if needed.
    */
   PRIZE_CHALLENGE: {
-    DEFAULT_EVENT: 'DevWorld2026',
+    DEFAULT_EVENT: 'WeAreDevs2026',
     /** Delivery public ID for prize lab URLs (sample lifestyle asset; not the demo Cloudicorn). */
     PUBLIC_ID: 'main-sample.png',
     /** Default POST target (relative works on Netlify and in `netlify dev`). */
@@ -533,6 +541,15 @@ const CloudinaryEngine = {
       : `${BASE_URL}/${IMAGE_ID}`;
   },
 
+  /** MP4 delivery URL for CONFIG.DEMO_HERO_VIDEO (scrolly video step). */
+  buildVideoUrl: (transformations = '') => {
+    const { CLOUD_NAME, PUBLIC_ID, VIDEO_VERSION } = CONFIG.DEMO_HERO_VIDEO;
+    const v = VIDEO_VERSION || 'v1778796156';
+    const t = (transformations || '').trim();
+    const chain = t ? (t.endsWith('/') ? t : `${t}/`) : '';
+    return `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${chain}${v}/${PUBLIC_ID}.mp4`;
+  },
+
   // Generate responsive image URLs
   generateResponsiveUrls: (transformations = '') => {
     const baseTransform = transformations ? `${transformations}/` : '';
@@ -622,9 +639,20 @@ const URLBreakdown = {
   initializeAll: () => {
     d3.selectAll('.step').each(function() {
       const step = d3.select(this);
-      const transform = step.attr('data-transform');
       const urlBreakdown = step.select('.url-breakdown');
-      
+      const videoTransform = step.attr('data-video-transform');
+
+      if (videoTransform && urlBreakdown.size() > 0) {
+        const { VIDEO_VERSION, PUBLIC_ID } = CONFIG.DEMO_HERO_VIDEO;
+        const fileSuffix = `/${VIDEO_VERSION}/${PUBLIC_ID}.mp4`;
+        URLBreakdown.updateDisplay(urlBreakdown.node(), null, videoTransform, fileSuffix, {
+          baseUrlText: 'https://res.cloudinary.com/jen-demos/video/upload/',
+          imageIdText: fileSuffix
+        });
+        return;
+      }
+
+      const transform = step.attr('data-transform');
       if (transform && urlBreakdown.size() > 0) {
         URLBreakdown.updateDisplay(urlBreakdown.node(), null, transform, null);
       }
@@ -811,6 +839,85 @@ const ImageTransitions = {
 };
 
 // ============================================================================
+// SCROLLY DESKTOP: CLOUDINARY VIDEO PLAYER (delivery URL = transformations)
+// ============================================================================
+
+const ScrollyCloudinaryPlayer = {
+  instance: null,
+  initPromise: null,
+
+  async ensureInstance() {
+    if (this.instance) {
+      return this.instance;
+    }
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+    const el = document.getElementById('main-scrolly-video');
+    if (!el || typeof cloudinary === 'undefined' || typeof cloudinary.player !== 'function') {
+      return null;
+    }
+    const { CLOUD_NAME } = CONFIG.DEMO_HERO_VIDEO;
+    this.initPromise = (async () => {
+      try {
+        const player = await cloudinary.player('main-scrolly-video', {
+          cloudName: CLOUD_NAME,
+          secure: true,
+          controls: true
+        });
+        this.instance = player;
+        return player;
+      } catch (err) {
+        console.warn('Cloudinary Video Player (scrolly) failed to initialize:', err);
+        return null;
+      } finally {
+        this.initPromise = null;
+      }
+    })();
+    return this.initPromise;
+  },
+
+  nativePlay(url) {
+    const el = document.getElementById('main-scrolly-video');
+    if (!el || !url) return;
+    el.setAttribute('src', url);
+    const p = el.play?.();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {});
+    }
+  },
+
+  async playFromDeliveryUrl(url) {
+    if (!url) return;
+    const player = await this.ensureInstance();
+    if (player) {
+      try {
+        await player.source(url);
+        const p = player.play?.();
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => {});
+        }
+      } catch (err) {
+        console.warn('Scrolly player source failed, using native video:', err);
+        this.nativePlay(url);
+      }
+    } else {
+      this.nativePlay(url);
+    }
+  },
+
+  pause() {
+    if (this.instance && typeof this.instance.pause === 'function') {
+      this.instance.pause();
+    }
+    const el = document.getElementById('main-scrolly-video');
+    if (el && typeof el.pause === 'function') {
+      el.pause();
+    }
+  }
+};
+
+// ============================================================================
 // INTERSECTION OBSERVER SYSTEM
 // ============================================================================
 
@@ -828,7 +935,44 @@ const IntersectionObserver = {
           steps.classed('active', false);
           const step = d3.select(entry.target);
           step.classed('active', true);
-          
+
+          const mainVid = d3.select('#main-scrolly-video');
+          const videoShell = d3.select('#scrolly-sticky-video-shell');
+          const videoTransform = step.attr('data-video-transform');
+
+          if (videoTransform) {
+            const videoUrl = CloudinaryEngine.buildVideoUrl(videoTransform);
+            if (IntersectionObserver.isDesktop && mainVid.node()) {
+              mainImage.classed('hidden', true);
+              d3.select('#main-image-loader').style('opacity', 0);
+              if (videoShell.node()) {
+                videoShell.classed('is-hidden', false).attr('aria-hidden', 'false');
+              }
+              mainVid.style('opacity', 1);
+              void ScrollyCloudinaryPlayer.playFromDeliveryUrl(videoUrl);
+            } else {
+              const stepVideo = step.select('.section-video');
+              if (stepVideo.node()) {
+                stepVideo.style('opacity', 1);
+              }
+            }
+            return;
+          }
+
+          if (mainVid.node()) {
+            ScrollyCloudinaryPlayer.pause();
+            if (videoShell.node()) {
+              videoShell.classed('is-hidden', true).attr('aria-hidden', 'true');
+            }
+            const el = mainVid.node();
+            if (el && !ScrollyCloudinaryPlayer.instance) {
+              el.removeAttribute('src');
+            }
+          }
+          if (mainImage.node()) {
+            mainImage.classed('hidden', false);
+          }
+
           const transform = step.attr('data-transform');
           if (transform) {
             const imgUrl = CloudinaryEngine.generateUrl(transform);
@@ -894,36 +1038,71 @@ const SectionsGenerator = {
     },
     {
       index: 3,
-      transform: 'e_art:aurora/e_background_removal/f_auto/q_auto',
-      title: 'Aurora Effect',
-      description: 'Woah! Solar flare!',
-      alt: 'Aurora Effect'
-    },
-    {
-      index: 4,
       transform: 'e_background_removal/o_20/f_auto/q_auto',
       title: 'Opacity',
       description: 'I\'m feeling faint!',
       alt: 'Opacity'
     },
     {
-      index: 5,
+      index: 4,
       transform: 'e_gen_background_replace/f_auto/q_auto',
       title: 'Generative Background Replace',
       description: 'Where am I?',
       alt: 'Generative Background Replace'
     },
     {
-      index: 6,
+      index: 5,
       transform: 'e_pixelate:15/e_background_removal/f_auto/q_auto',
       title: 'Pixelate',
       description: 'I feel like going incognito. Let\'s add some pixels.',
       alt: 'Pixelate'
+    },
+    {
+      index: 6,
+      media: 'video',
+      /** Video transformation chain (before version/public_id in URL). */
+      videoTransform:
+        'c_fill,w_900,h_900/r_30/e_fade:1000/e_fade:-2000/f_auto,q_auto',
+      title: 'Let\'s move!',
+      description:
+        'Transform videos too! <strong class="text-white">c_fill</strong> crops to a 900×900 square, <strong class="text-white">r_30</strong> rounds every corner with a 30px radius, plus <strong class="text-white">e_fade</strong> and <strong class="text-white">f_auto</strong> / <strong class="text-white">q_auto</strong> for delivery.',
+      alt: 'Uni star transformed video'
     }
   ],
 
   // Generate section HTML
   generateSectionHTML: (section) => {
+    if (section.media === 'video') {
+      const vt = (section.videoTransform || '').replace(/"/g, '&quot;');
+      return `
+      <section class="step bg-transparent rounded-xl p-6 lg:p-8 min-h-64 lg:min-h-64 flex flex-col lg:flex-row items-center justify-center transition-all duration-300" 
+               data-index="${section.index}" data-media="video" data-video-transform="${vt}">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between w-full lg:max-w-6xl">
+          <div class="w-full max-w-sm lg:max-w-md mx-auto mb-6 lg:mb-0 lg:flex-1 lg:pr-8">
+            <div class="text-center">
+              <div class="section-video-shell">
+                <video class="section-video"
+                    playsinline controls muted loop preload="metadata"
+                    title="${section.alt}"></video>
+                <div class="section-video-loader">
+                  <div class="section-video-loader-spinner" aria-hidden="true"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="lg:pl-8">
+            <div class="text text-lg text-gray-300 text-center lg:text-left max-w-2xl">
+              <h2 class="text-2xl font-bold text-white mb-4">${section.title}</h2>
+              <p class="text-gray-300 leading-relaxed mb-4">${section.description}</p>
+              <div class="url-breakdown bg-gray-800/50 px-3 py-2 rounded text-sm sm:text-base leading-relaxed"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+    }
+
     return `
       <section class="step bg-transparent rounded-xl p-6 lg:p-8 min-h-64 lg:min-h-64 flex flex-col lg:flex-row items-center justify-center transition-all duration-300" 
                data-index="${section.index}" data-transform="${section.transform}">
@@ -979,6 +1158,15 @@ const SectionsGenerator = {
     
     d3.selectAll('.step').each(function() {
       const step = d3.select(this);
+      const videoTransform = step.attr('data-video-transform');
+      const sectionVideo = step.select('.section-video');
+
+      if (videoTransform && sectionVideo.node()) {
+        const url = CloudinaryEngine.buildVideoUrl(videoTransform);
+        sectionVideo.attr('src', url).style('opacity', 1);
+        return;
+      }
+
       const transform = step.attr('data-transform');
       const sectionImage = step.select('.section-image');
       
@@ -1330,6 +1518,10 @@ const ErrorHandler = {
 };
 
 // ============================================================================
+// LANDING HERO — CLOUDINARY VIDEO PLAYER (square crop)
+// ============================================================================
+
+// ============================================================================
 // MAIN APPLICATION INITIALIZATION
 // ============================================================================
 
@@ -1337,7 +1529,7 @@ const App = {
   init: () => {
     // Initialize error handling
     ErrorHandler.init();
-    
+
     // Initialize starfield
     Starfield.init();
     

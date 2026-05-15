@@ -7,6 +7,7 @@
   <!-- Optional: Google Apps Script (or other) HTTPS URL for prize challenge row submission -->
   <meta name="challenge-submit-endpoint" content="">
   <link rel="stylesheet" href="dist/output.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cloudinary-video-player@4.0.1/dist/player.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 <body class="bg-gray-50 min-h-screen pb-20 md:pb-0">
   <!-- Header -->
@@ -49,29 +50,66 @@
     <!-- Starfield Canvas -->
     <canvas id="starfield" class="fixed inset-0 pointer-events-none z-0"></canvas>
     
-    <!-- Landing: quote + image only until Demo -->
-    <div id="landing-hero" class="bg-gradient-to-br from-black to-purple-900 text-white py-16 md:py-24 relative z-10 border-b border-gray-700 min-h-[60vh] flex flex-col justify-center">
-      <div class="max-w-lg mx-auto text-center px-4 sm:px-6 lg:px-8">
-        <p class="text-xl md:text-2xl font-semibold text-white leading-relaxed mb-8">
-          "I'm just a Cloudicorn, trying to float in space. But I feel kind of heavy! Help me fly!"
-        </p>
-        <div class="rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-          <img src="https://res.cloudinary.com/jen-demos/image/upload/floating-cloudicorn.png"
-               alt="Cloudicorn floating in space"
-               class="w-full object-cover aspect-square sm:aspect-auto">
-        </div>
+    <!-- Landing: single wizard (demo / quiz / challenge) -->
+    <div id="landing-hero" class="bg-gradient-to-br from-black to-purple-900 text-white py-8 md:py-10 relative z-10 border-b border-gray-700">
+      <div class="max-w-2xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+        <ol class="space-y-4 list-none p-0 m-0" aria-label="Experiences">
+            <li class="rounded-2xl border border-emerald-500/25 bg-emerald-950/20 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="flex items-start gap-4 min-w-0">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/25 text-emerald-200 font-bold border border-emerald-400/40" aria-hidden="true">1</span>
+                <div class="min-w-0">
+                  <h4 class="text-lg font-semibold text-white">Interactive demo</h4>
+                  <p class="text-sm text-gray-400 mt-1">Explore image and video transformations.</p>
+                </div>
+              </div>
+              <button type="button" data-nav-action="demo"
+                class="inline-flex w-full sm:w-auto shrink-0 items-center justify-center rounded-lg border border-emerald-400/60 bg-emerald-600/50 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600/80 focus:outline-none focus:ring-2 focus:ring-emerald-400 min-h-[44px] sm:min-w-[10rem]">
+                Open demo
+              </button>
+            </li>
+            <li class="rounded-2xl border border-purple-500/25 bg-purple-950/20 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="flex items-start gap-4 min-w-0">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-500/25 text-purple-200 font-bold border border-purple-400/40" aria-hidden="true">2</span>
+                <div class="min-w-0">
+                  <h4 class="text-lg font-semibold text-white">Quiz for swag</h4>
+                  <p class="text-sm text-gray-400 mt-1">Five questions for swag!</p>
+                </div>
+              </div>
+              <button type="button" data-nav-action="quiz"
+                class="inline-flex w-full sm:w-auto shrink-0 items-center justify-center rounded-lg border border-purple-400/60 bg-purple-600/50 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-600/80 focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-[44px] sm:min-w-[10rem]">
+                Open quiz
+              </button>
+            </li>
+            <li class="rounded-2xl border border-blue-500/25 bg-blue-950/20 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="flex items-start gap-4 min-w-0">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/25 text-blue-200 font-bold border border-blue-400/40" aria-hidden="true">3</span>
+                <div class="min-w-0">
+                  <h4 class="text-lg font-semibold text-white">Prize challenge</h4>
+                  <p class="text-sm text-gray-400 mt-1">Edit URLs, validate previews, and submit to enter to win a prize.</p>
+                </div>
+              </div>
+              <button type="button" data-nav-action="challenge" data-event="devworld"
+                class="inline-flex w-full sm:w-auto shrink-0 items-center justify-center rounded-lg border border-blue-400/60 bg-blue-600/50 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600/80 focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[44px] sm:min-w-[10rem]">
+                Open challenge
+              </button>
+            </li>
+          </ol>
       </div>
     </div>
 
-    <div id="demo-scrolly" class="hidden scroll-mt-20">
+    <div id="demo-scrolly" class="hidden scroll-mt-16">
     <div id="scrolly-columns" class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <!-- Responsive Layout -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+
         <!-- Image Column - Sticky on desktop, normal on mobile -->
-        <div id="image-col" class="lg:sticky lg:top-20 lg:h-screen lg:flex lg:items-center lg:justify-center order-2 lg:order-1">
-          <div class="w-full max-w-sm lg:max-w-lg mx-auto lg:mt-8 lg:mb-20 relative">
+        <div id="image-col" class="lg:sticky lg:top-20 lg:h-screen lg:flex lg:items-start lg:justify-center lg:pt-4 order-2 lg:order-1">
+          <div class="w-full max-w-sm lg:max-w-lg mx-auto lg:mt-2 lg:mb-20 relative">
                         <img id="main-image" alt="Scrollytelling Image" 
                  class="w-full rounded-xl object-cover opacity-0">
+            <div id="scrolly-sticky-video-shell" class="scrolly-sticky-video-shell is-hidden" aria-hidden="true">
+            <video id="main-scrolly-video" class="cld-video-player cld-video-player-skin-dark scrolly-delivery-video" playsinline controls muted loop preload="metadata" title="Cloudicorn catches a falling star"></video>
+            </div>
             <!-- Loader overlay -->
             <div id="main-image-loader" class="absolute inset-0 bg-gray-900/80 rounded-xl flex items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-none">
               <div class="text-center">
@@ -83,7 +121,12 @@
         </div>
         
                   <!-- Text Column -->
-          <div id="scrolly-container" class="space-y-16 lg:space-y-[80vh] py-16 lg:py-[80vh] max-w-3xl mx-auto lg:pr-8 order-1 lg:order-2">
+          <div id="scrolly-container" class="space-y-16 lg:space-y-[80vh] pt-6 pb-16 lg:pt-10 lg:pb-[80vh] max-w-3xl mx-auto lg:pr-8 order-1 lg:order-2">
+            <div class="scrolly-intro  px-4 py-6 sm:px-6 sm:py-8 max-w-2xl mx-auto lg:mx-0 text-center lg:text-left">
+              <h2 class="text-xl sm:text-2xl md:text-3xl font-semibold text-white leading-snug text-balance">
+                I&rsquo;m just a Cloudicorn, trying to float in space. But I feel kind of heavy! Help me fly!
+              </h2>
+            </div>
             <!-- Sections will be generated dynamically by JavaScript -->
           </div>
         </div>
@@ -201,69 +244,69 @@
           <div id="quiz-container" class="space-y-8">
             <!-- Question 1 -->
             <div class="quiz-question bg-gray-800/30 rounded-lg p-6 border border-gray-700" data-question="1">
-              <h3 class="text-xl font-semibold mb-4">1. What transformation would you use to make an image look like a cartoon?</h3>
+              <h3 class="text-xl font-semibold mb-4">1. What are the two parameters that are used to optimize image delivery?</h3>
               <div class="space-y-3">
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q1" value="a" class="mr-3">
-                  <span>a) e_cartoonify</span>
+                  <span>a) <code class="text-purple-300">f_auto</code> / <code class="text-purple-300">q_auto</code></span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q1" value="b" class="mr-3">
-                  <span>b) e_art:cartoon</span>
+                  <span>b) <code class="text-purple-300">f_png</code> / <code class="text-purple-300">q_100</code></span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q1" value="c" class="mr-3">
-                  <span>c) e_style:cartoon</span>
+                  <span>c) <code class="text-purple-300">f_webp</code> / <code class="text-purple-300">q_manual</code></span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q1" value="d" class="mr-3">
-                  <span>d) e_filter:cartoon</span>
+                  <span>d) <code class="text-purple-300">c_auto</code> / <code class="text-purple-300">f_auto</code></span>
                 </label>
               </div>
             </div>
 
             <!-- Question 2 -->
             <div class="quiz-question bg-gray-800/30 rounded-lg p-6 border border-gray-700" data-question="2">
-              <h3 class="text-xl font-semibold mb-4">2. Which parameter is used to adjust the brightness of an image?</h3>
+              <h3 class="text-xl font-semibold mb-4">2. How do you apply a generative colorize transformation to an image?</h3>
               <div class="space-y-3">
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q2" value="a" class="mr-3">
-                  <span>a) e_light</span>
+                  <span>a) <code class="text-purple-300">e_recolor</code></span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q2" value="b" class="mr-3">
-                  <span>b) e_brightness</span>
+                  <span>b) <code class="text-purple-300">e_gen_recolor</code></span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q2" value="c" class="mr-3">
-                  <span>c) e_luminance</span>
+                  <span>c) <code class="text-purple-300">e_colorize:ai</code></span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q2" value="d" class="mr-3">
-                  <span>d) e_exposure</span>
+                  <span>d) <code class="text-purple-300">e_tint:generative</code></span>
                 </label>
               </div>
             </div>
 
             <!-- Question 3 -->
             <div class="quiz-question bg-gray-800/30 rounded-lg p-6 border border-gray-700" data-question="3">
-              <h3 class="text-xl font-semibold mb-4">3. What does the 'e_art:aurora' transformation do?</h3>
+              <h3 class="text-xl font-semibold mb-4">3. The scrolly video demo crops to a square with <code class="text-purple-300">c_fill</code>, then uses <code class="text-purple-300">r_30</code>. What does <code class="text-purple-300">r_30</code> do here?</h3>
               <div class="space-y-3">
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q3" value="a" class="mr-3">
-                  <span>a) Adds an aurora border around the image</span>
+                  <span>a) Sets the video frame rate to 30&nbsp;fps</span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q3" value="b" class="mr-3">
-                  <span>b) Applies an aurora borealis effect to the image</span>
+                  <span>b) Rounds the corners of the frame with a 30&nbsp;pixel radius</span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q3" value="c" class="mr-3">
-                  <span>c) Changes the image to aurora colors</span>
+                  <span>c) Trims the first 30 seconds from the start of the clip</span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q3" value="d" class="mr-3">
-                  <span>d) Creates a glare effect</span>
+                  <span>d) Rotates the video by 30 degrees</span>
                 </label>
               </div>
             </div>
@@ -274,19 +317,19 @@
               <div class="space-y-3">
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q4" value="a" class="mr-3">
-                  <span>a) Using commas (e_art:neon,e_brightness:50)</span>
+                  <span>a) Using semicolons (e_background_removal;e_brightness:50)</span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q4" value="b" class="mr-3">
-                  <span>b) Using plus signs (e_art:neon+e_brightness:50)</span>
+                  <span>b) Using plus signs (e_background_removal+e_brightness:50)</span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q4" value="c" class="mr-3">
-                  <span>c) Using forward slashes (e_art:neon/e_brightness:50)</span>
+                  <span>c) Using forward slashes (e_background_removal/e_brightness:50)</span>
                 </label>
                 <label class="flex items-center p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors">
                   <input type="radio" name="q4" value="d" class="mr-3">
-                  <span>d) Using ampersands (e_art:neon&e_brightness:50)</span>
+                  <span>d) Using ampersands (e_background_removal&e_brightness:50)</span>
                 </label>
               </div>
             </div>
@@ -408,6 +451,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/cloudinary-video-player@4.0.1/dist/player.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="main.js"></script>
 </body>

@@ -70,7 +70,7 @@ body {
 /* Mobile adjustments */
 @media (max-width: 1024px) {
   #scrolly-container {
-    @apply space-y-[40vh] py-[40vh];
+    @apply space-y-[40vh] pt-8 pb-[40vh];
   }
   
   #image-col {
@@ -255,5 +255,95 @@ body {
   word-break: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
+}
+
+/* Sticky column: square shell matches encoded 900×900 delivery; backing = shell only */
+.scrolly-sticky-video-shell {
+  box-sizing: border-box;
+  width: min(100%, min(90vh, 900px));
+  aspect-ratio: 1 / 1;
+  max-width: 100%;
+  margin-inline: auto;
+  border-radius: 30px;
+  overflow: hidden;
+  background: #0c0a12;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.scrolly-sticky-video-shell > * {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.scrolly-sticky-video-shell.is-hidden {
+  display: none !important;
+}
+
+#main-scrolly-video.cld-video-player.scrolly-delivery-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Inline step video (mobile / in-flow): no Tailwind on <video>; frame from transformations */
+.section-video-shell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-width: 28rem;
+  width: 100%;
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.section-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.section-video-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17, 24, 39, 0.8);
+  border-radius: 30px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.section-video-loader-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid rgba(168, 85, 247, 0.5);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: section-video-spin 0.75s linear infinite;
+}
+
+@media (min-width: 1024px) {
+  .section-video-loader-spinner {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+@keyframes section-video-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
