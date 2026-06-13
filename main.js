@@ -75,21 +75,22 @@ See “Using a prompt” in the docs.`,
           'https://cloudinary.com/documentation/generative_ai_transformations#generative_background_replace'
       },
       {
-        id: 'generativeReplace',
-        validator: 'generativeReplacePrompt',
-        title: 'Task 2: Replace an object',
+        id: 'videoTransform',
+        type: 'video',
+        validator: 'videoTransform',
+        title: 'Task 2: Transform the video',
         description:
-          'Replace an object in this image using from and to prompts (e_gen_replace:from_…;to_…). Your URL must include e_gen_replace, both from_ and to_, plus f_auto and q_auto. Hint: pick a clear subject in the base image to replace.',
-        descriptionHtml: `Use generative replace with explicit from and to prompts (<span class="sample-transform-hint">e_gen_replace:from_…;to_…</span>). Your URL must include:
+          'Apply a video effect to the uni-star video using Cloudinary video transformations. Your URL must include f_auto, q_auto, and one of: e_loop, e_boomerang, e_reverse, or e_accelerate.',
+        descriptionHtml: `Apply a video effect to the <strong class="text-white">uni-star</strong> video. Start with this URL:
+<code class="block text-xs font-mono text-emerald-300/95 bg-black/40 rounded px-2 py-1 my-2 break-all">https://res.cloudinary.com/jen-demos/video/upload/v1778796156/uni-star.mp4</code>
+Insert your transformations between <span class="sample-transform-hint">/upload/</span> and the version. Your URL must include:
 <ul class="list-disc list-inside mt-2 mb-2 space-y-1.5 text-gray-300">
-<li><span class="sample-transform-hint">e_gen_replace</span></li>
-<li>both <span class="sample-transform-hint">from_</span> and <span class="sample-transform-hint">to_</span></li>
-<li><span class="sample-transform-hint">f_auto</span></li>
-<li><span class="sample-transform-hint">q_auto</span></li>
+<li><span class="sample-transform-hint">f_auto</span> and <span class="sample-transform-hint">q_auto</span></li>
+<li>One of: <span class="sample-transform-hint">e_loop</span>, <span class="sample-transform-hint">e_boomerang</span>, <span class="sample-transform-hint">e_reverse</span>, or <span class="sample-transform-hint">e_accelerate:&lt;value&gt;</span></li>
 </ul>
-Hint: pick a clear subject in the base image to replace.`,
+Example: <span class="sample-transform-hint">…/upload/f_auto,q_auto,e_loop/v1778796156/uni-star.mp4</span>`,
         docsUrl:
-          'https://cloudinary.com/documentation/generative_ai_transformations#generative_replace'
+          'https://cloudinary.com/documentation/video_manipulation_and_delivery#video_effects'
       }
     ]
   }
@@ -137,12 +138,13 @@ const CHALLENGE_VALIDATORS = {
     /prompt_/.test(normalizedChain) &&
     /f_auto/.test(normalizedChain) &&
     /q_auto/.test(normalizedChain),
-  generativeReplacePrompt: (normalizedChain) =>
-    /e_gen_replace/.test(normalizedChain) &&
-    /from_/.test(normalizedChain) &&
-    /to_/.test(normalizedChain) &&
+  videoTransform: (normalizedChain) =>
     /f_auto/.test(normalizedChain) &&
-    /q_auto/.test(normalizedChain)
+    /q_auto/.test(normalizedChain) &&
+    (/e_loop/.test(normalizedChain) ||
+     /e_boomerang/.test(normalizedChain) ||
+     /e_reverse/.test(normalizedChain) ||
+     /e_accelerate/.test(normalizedChain))
 };
 
 const ChallengeLab = {
@@ -214,10 +216,44 @@ const ChallengeLab = {
     }
   },
 
+  extractVideoChainFromUrl: (urlString) => {
+    const { CLOUD_NAME, PUBLIC_ID } = CONFIG.DEMO_HERO_VIDEO;
+    const videoFile = `${PUBLIC_ID}.mp4`;
+    try {
+      const u = new URL(urlString.trim());
+      if (!u.hostname.endsWith('cloudinary.com')) {
+        return { ok: false, error: 'Use a Cloudinary delivery URL (e.g. res.cloudinary.com).' };
+      }
+      const parts = u.pathname.split('/').filter(Boolean);
+      if (parts[0] !== CLOUD_NAME) {
+        return { ok: false, error: `Cloud must be "${CLOUD_NAME}" (this demo's asset).` };
+      }
+      const uploadIdx = parts.indexOf('upload');
+      if (uploadIdx < 0 || parts[uploadIdx - 1] !== 'video') {
+        return { ok: false, error: 'Path must include /video/upload/.' };
+      }
+      const rest = parts.slice(uploadIdx + 1);
+      if (rest.length < 1) {
+        return { ok: false, error: 'Missing public ID in URL.' };
+      }
+      const lastSeg = rest[rest.length - 1].toLowerCase();
+      if (lastSeg !== videoFile.toLowerCase()) {
+        return { ok: false, error: `Public ID must be "${videoFile}".` };
+      }
+      const beforeFile = rest.slice(0, -1);
+      const chain = beforeFile.filter((seg) => seg && !/^v\d+$/i.test(seg)).join('/');
+      return { ok: true, chain };
+    } catch {
+      return { ok: false, error: 'Invalid URL.' };
+    }
+  },
+
   validateTask: (taskIndex, urlString) => {
     const task = CONFIG.PRIZE_CHALLENGE.TASKS[taskIndex];
     if (!task) return { ok: false, error: 'Unknown task.' };
-    const parsed = ChallengeLab.extractChainFromUrl(urlString);
+    const parsed = task.type === 'video'
+      ? ChallengeLab.extractVideoChainFromUrl(urlString)
+      : ChallengeLab.extractChainFromUrl(urlString);
     if (!parsed.ok) return parsed;
     const n = ChallengeLab.normalizeChain(parsed.chain);
     const key = task.validator || task.id;
@@ -340,6 +376,8 @@ const ChallengeLab = {
 
   handleCheck: (taskIndex) => {
     const input = document.getElementById(`prize-url-${taskIndex + 1}`);
+    const task = CONFIG.PRIZE_CHALLENGE.TASKS[taskIndex];
+    const isVideo = task && task.type === 'video';
     const preview = document.getElementById(`prize-preview-${taskIndex + 1}`);
     const url = input ? input.value.trim() : '';
     if (!url) {
@@ -367,26 +405,38 @@ const ChallengeLab = {
       ChallengeLab.setPreviewLoading(taskIndex, true);
 
       const finishLoad = () => {
-        preview.onload = null;
+        if (isVideo) { preview.oncanplay = null; } else { preview.onload = null; }
         preview.onerror = null;
         ChallengeLab.setPreviewLoading(taskIndex, false);
       };
 
-      preview.onload = () => {
-        finishLoad();
-        preview.classList.remove('hidden');
-        preview.alt = `Preview task ${taskIndex + 1}`;
-        ChallengeLab.setStatus(taskIndex, true, 'Looks correct for this task.');
-      };
+      if (isVideo) {
+        preview.oncanplay = () => {
+          finishLoad();
+          preview.classList.remove('hidden');
+          ChallengeLab.setStatus(taskIndex, true, 'Looks correct for this task.');
+        };
+      } else {
+        preview.onload = () => {
+          finishLoad();
+          preview.classList.remove('hidden');
+          preview.alt = `Preview task ${taskIndex + 1}`;
+          ChallengeLab.setStatus(taskIndex, true, 'Looks correct for this task.');
+        };
+      }
 
       preview.onerror = () => {
         finishLoad();
         preview.classList.add('hidden');
-        ChallengeLab.setStatus(taskIndex, false, 'Image failed to load. Check the URL.');
+        ChallengeLab.setStatus(
+          taskIndex, false,
+          isVideo ? 'Video failed to load. Check the URL.' : 'Image failed to load. Check the URL.'
+        );
       };
 
       preview.src = '';
       preview.src = url;
+      if (isVideo) preview.load();
     }
   },
 
@@ -456,6 +506,9 @@ const ChallengeLab = {
       url2
     };
 
+    const submitBtn = document.getElementById('prize-submit');
+    if (submitBtn) submitBtn.disabled = true;
+
     if (statusEl) {
       statusEl.textContent = 'Submitting…';
       statusEl.className = 'text-sm mt-2 text-gray-300';
@@ -484,6 +537,7 @@ const ChallengeLab = {
         statusEl.className = 'text-sm mt-2 text-green-400';
       }
     } catch (err) {
+      if (submitBtn) submitBtn.disabled = false;
       if (statusEl) {
         statusEl.textContent =
           'Submit failed. Use netlify dev with env vars, or check Netlify function logs. ' +
@@ -498,6 +552,25 @@ const ChallengeLab = {
     ChallengeLab.renderTaskCopy();
     ChallengeLab.syncEventDisplay();
     document.getElementById('prize-copy-starter-url')?.addEventListener('click', ChallengeLab.copyStarterUrl);
+    document.getElementById('prize-copy-video-url')?.addEventListener('click', async () => {
+      const el = document.getElementById('prize-video-starter-url');
+      const text = el?.textContent?.trim() || '';
+      const feedback = document.getElementById('prize-copy-video-feedback');
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        if (feedback) {
+          feedback.textContent = 'Copied!';
+          feedback.className = 'text-xs text-green-400 mt-2 min-h-[1rem]';
+          setTimeout(() => { if (feedback) feedback.textContent = ''; }, 2500);
+        }
+      } catch {
+        if (feedback) {
+          feedback.textContent = 'Clipboard blocked — copy manually.';
+          feedback.className = 'text-xs text-amber-400 mt-2 min-h-[1rem]';
+        }
+      }
+    });
     document.getElementById('prize-check-1')?.addEventListener('click', () => ChallengeLab.handleCheck(0));
     document.getElementById('prize-check-2')?.addEventListener('click', () => ChallengeLab.handleCheck(1));
     document.getElementById('prize-challenge-form')?.addEventListener('submit', ChallengeLab.handleSubmit);
