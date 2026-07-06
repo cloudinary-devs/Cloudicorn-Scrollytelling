@@ -18,6 +18,8 @@ const CONFIG = {
     TOTAL_QUESTIONS: 5,
     /** Min correct answers for swag (4/5 = 80%). */
     PASSING_SCORE: 4,
+    /** utm.io link hit (fire-and-forget) on submit, to capture quiz completions. */
+    COMPLETION_TRACKING_URL: 'https://link.cloudinary.com/urh17',
     CORRECT_ANSWERS: {
       q1: 'a', // f_auto / q_auto (first scrolly step — optimized delivery)
       q2: 'b', // e_gen_recolor (Generative Colorize step)
@@ -623,6 +625,10 @@ const CloudinaryEngine = {
     return `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${chain}${v}/${PUBLIC_ID}.mp4`;
   },
 
+  /** Poster frame (JPG) for the same delivery, so the video isn't a blank box before playback starts. */
+  buildVideoPosterUrl: (transformations = '') =>
+    CloudinaryEngine.buildVideoUrl(transformations).replace(/\.mp4$/, '.jpg'),
+
   // Generate responsive image URLs
   generateResponsiveUrls: (transformations = '') => {
     const baseTransform = transformations ? `${transformations}/` : '';
@@ -1015,13 +1021,14 @@ const IntersectionObserver = {
 
           if (videoTransform) {
             const videoUrl = CloudinaryEngine.buildVideoUrl(videoTransform);
+            const posterUrl = CloudinaryEngine.buildVideoPosterUrl(videoTransform);
             if (IntersectionObserver.isDesktop && mainVid.node()) {
               mainImage.classed('hidden', true);
               d3.select('#main-image-loader').style('opacity', 0);
               if (videoShell.node()) {
                 videoShell.classed('is-hidden', false).attr('aria-hidden', 'false');
               }
-              mainVid.style('opacity', 1);
+              mainVid.attr('poster', posterUrl).style('opacity', 1);
               void ScrollyCloudinaryPlayer.playFromDeliveryUrl(videoUrl);
             } else {
               const stepVideo = step.select('.section-video');
@@ -1236,7 +1243,8 @@ const SectionsGenerator = {
 
       if (videoTransform && sectionVideo.node()) {
         const url = CloudinaryEngine.buildVideoUrl(videoTransform);
-        sectionVideo.attr('src', url).style('opacity', 1);
+        const posterUrl = CloudinaryEngine.buildVideoPosterUrl(videoTransform);
+        sectionVideo.attr('src', url).attr('poster', posterUrl).style('opacity', 1);
         return;
       }
 
@@ -1338,7 +1346,9 @@ const QuizSystem = {
   handleSubmit: () => {
     let score = 0;
     const { TOTAL_QUESTIONS, CORRECT_ANSWERS } = CONFIG.QUIZ;
-    
+
+    QuizSystem.trackCompletion();
+
     // Reset visual feedback
     QuizSystem.resetVisualFeedback();
     
@@ -1370,6 +1380,15 @@ const QuizSystem = {
     QuizSystem.showResults(score);
     QuizSystem.displayResults();
     QuizSystem.scrollToResults();
+  },
+
+  /** Fire-and-forget hit to the utm.io link so quiz completions get captured there, without navigating the user away. */
+  trackCompletion: () => {
+    try {
+      fetch(CONFIG.QUIZ.COMPLETION_TRACKING_URL, { mode: 'no-cors', keepalive: true });
+    } catch {
+      /* best-effort; never block quiz submission */
+    }
   },
 
   resetVisualFeedback: () => {
@@ -1490,6 +1509,74 @@ const QuizSystem = {
 // ============================================================================
 // SITE NAVIGATION (demo / quiz / challenge deep links)
 // ============================================================================
+
+const QRCodeWidget = {
+  init: () => {
+    const container = document.getElementById('homescreen-qr');
+    if (!container) return;
+
+    const img = document.createElement('img');
+    img.src = 'qr.png';
+    img.width = 96;
+    img.height = 96;
+    img.alt = 'QR code to open this app on your phone';
+    container.appendChild(img);
+  }
+};
+
+const StayInTouchModal = {
+  MARKETO_SRC: '//lp.cloudinary.com/js/forms2/js/forms2.min.js',
+  MARKETO_BASE_URL: '//lp.cloudinary.com',
+  MARKETO_MUNCHKIN_ID: '796-XWL-496',
+  MARKETO_FORM_ID: 1059,
+
+  scriptLoaded: false,
+  scriptLoading: null,
+
+  init: () => {
+    const dialog = document.getElementById('stay-in-touch-modal');
+    if (!dialog) return;
+
+    document.querySelectorAll('[data-nav-action="stay-in-touch"]').forEach((el) => {
+      el.addEventListener('click', StayInTouchModal.open);
+    });
+
+    document.getElementById('stay-in-touch-close')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  },
+
+  open: () => {
+    const dialog = document.getElementById('stay-in-touch-modal');
+    if (!dialog) return;
+    dialog.showModal();
+    StayInTouchModal.loadMarketoForm();
+  },
+
+  loadMarketoForm: () => {
+    if (StayInTouchModal.scriptLoaded) return StayInTouchModal.scriptLoading;
+    if (StayInTouchModal.scriptLoading) return StayInTouchModal.scriptLoading;
+
+    StayInTouchModal.scriptLoading = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = StayInTouchModal.MARKETO_SRC;
+      script.onload = () => {
+        StayInTouchModal.scriptLoaded = true;
+        MktoForms2.loadForm(
+          StayInTouchModal.MARKETO_BASE_URL,
+          StayInTouchModal.MARKETO_MUNCHKIN_ID,
+          StayInTouchModal.MARKETO_FORM_ID
+        );
+        resolve();
+      };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+
+    return StayInTouchModal.scriptLoading;
+  }
+};
 
 const SiteNavigation = {
   scrollToId: (id, behavior = 'smooth') => {
@@ -1625,6 +1712,12 @@ const App = {
     
     // Deep links + header/footer nav (quiz & challenge)
     SiteNavigation.init();
+
+    // "Stay in touch" modal (lazy-loaded Marketo form)
+    StayInTouchModal.init();
+
+    // QR code to open this app on a phone
+    QRCodeWidget.init();
   }
 };
 

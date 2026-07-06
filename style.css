@@ -72,7 +72,12 @@ body {
   #scrolly-container {
     @apply space-y-[40vh] pt-8 pb-[40vh];
   }
-  
+
+  /* Shrink the gap between the intro heading and the first step's image (was inheriting the 40vh step-to-step spacing). */
+  #scrolly-container > .scrolly-intro + div {
+    margin-top: 2rem !important;
+  }
+
   #image-col {
     height: 50vh;
     position: relative;
@@ -345,5 +350,109 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* "Stay in touch" Marketo form: match booth (prize-challenge-form) input styling. */
+#stay-in-touch-modal .mktoForm.mktoForm,
+#stay-in-touch-modal .mktoForm.mktoForm * {
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+  color: #d1d5db;
+}
+
+#stay-in-touch-modal .mktoForm.mktoForm {
+  width: 100% !important;
+}
+
+#stay-in-touch-modal .mktoFormRow,
+#stay-in-touch-modal .mktoFieldDescriptor,
+#stay-in-touch-modal .mktoFieldWrap {
+  width: 100% !important;
+  float: none !important;
+  margin-bottom: 1rem;
+}
+
+#stay-in-touch-modal .mktoGutter,
+#stay-in-touch-modal .mktoOffset {
+  display: none !important;
+  width: 0 !important;
+}
+
+#stay-in-touch-modal .mktoLabel.mktoLabel {
+  display: block !important;
+  width: auto !important;
+  float: none !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #d1d5db;
+  margin-bottom: 0.5rem;
+}
+
+#stay-in-touch-modal .mktoAsterix {
+  color: #f87171;
+}
+
+#stay-in-touch-modal .mktoField.mktoField {
+  display: block !important;
+  width: 100% !important;
+  float: none !important;
+  padding: 0.75rem 1rem;
+  background-color: rgba(17, 24, 39, 0.6);
+  border: 1px solid #4b5563;
+  border-radius: 0.5rem;
+  color: #fff;
+}
+
+#stay-in-touch-modal select.mktoField.mktoField {
+  background-color: #111827;
+}
+
+#stay-in-touch-modal .mktoField.mktoField::placeholder {
+  color: #6b7280;
+}
+
+#stay-in-touch-modal .mktoField.mktoField:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #6366f1;
+  border-color: #6366f1;
+}
+
+#stay-in-touch-modal .mktoCheckboxList,
+#stay-in-touch-modal .mktoRadioList {
+  color: #d1d5db;
+}
+
+#stay-in-touch-modal .mktoErrorMsg {
+  color: #f87171;
+  font-size: 0.75rem;
+}
+
+#stay-in-touch-modal .mktoHtmlText,
+#stay-in-touch-modal .mktoInstruction {
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+#stay-in-touch-modal .mktoButtonRow {
+  margin-top: 0.5rem;
+}
+
+#stay-in-touch-modal .mktoButtonWrap.mktoButtonWrap {
+  width: auto !important;
+  float: none !important;
+}
+
+#stay-in-touch-modal .mktoButton.mktoButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background-image: linear-gradient(to right, #4f46e5, #9333ea);
+  color: #fff;
+  font-weight: 600;
+  min-height: 44px;
+}
+
+#stay-in-touch-modal .mktoButton.mktoButton:hover {
+  background-image: linear-gradient(to right, #6366f1, #a855f7);
 }
 
