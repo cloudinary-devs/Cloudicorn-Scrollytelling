@@ -1524,60 +1524,6 @@ const QRCodeWidget = {
   }
 };
 
-const StayInTouchModal = {
-  MARKETO_SRC: '//lp.cloudinary.com/js/forms2/js/forms2.min.js',
-  MARKETO_BASE_URL: '//lp.cloudinary.com',
-  MARKETO_MUNCHKIN_ID: '796-XWL-496',
-  MARKETO_FORM_ID: 1059,
-
-  scriptLoaded: false,
-  scriptLoading: null,
-
-  init: () => {
-    const dialog = document.getElementById('stay-in-touch-modal');
-    if (!dialog) return;
-
-    document.querySelectorAll('[data-nav-action="stay-in-touch"]').forEach((el) => {
-      el.addEventListener('click', StayInTouchModal.open);
-    });
-
-    document.getElementById('stay-in-touch-close')?.addEventListener('click', () => dialog.close());
-    dialog.addEventListener('click', (event) => {
-      if (event.target === dialog) dialog.close();
-    });
-  },
-
-  open: () => {
-    const dialog = document.getElementById('stay-in-touch-modal');
-    if (!dialog) return;
-    dialog.showModal();
-    StayInTouchModal.loadMarketoForm();
-  },
-
-  loadMarketoForm: () => {
-    if (StayInTouchModal.scriptLoaded) return StayInTouchModal.scriptLoading;
-    if (StayInTouchModal.scriptLoading) return StayInTouchModal.scriptLoading;
-
-    StayInTouchModal.scriptLoading = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = StayInTouchModal.MARKETO_SRC;
-      script.onload = () => {
-        StayInTouchModal.scriptLoaded = true;
-        MktoForms2.loadForm(
-          StayInTouchModal.MARKETO_BASE_URL,
-          StayInTouchModal.MARKETO_MUNCHKIN_ID,
-          StayInTouchModal.MARKETO_FORM_ID
-        );
-        resolve();
-      };
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-
-    return StayInTouchModal.scriptLoading;
-  }
-};
-
 const SiteNavigation = {
   scrollToId: (id, behavior = 'smooth') => {
     const el = document.getElementById(id);
@@ -1712,9 +1658,6 @@ const App = {
     
     // Deep links + header/footer nav (quiz & challenge)
     SiteNavigation.init();
-
-    // "Stay in touch" modal (lazy-loaded Marketo form)
-    StayInTouchModal.init();
 
     // QR code to open this app on a phone
     QRCodeWidget.init();
