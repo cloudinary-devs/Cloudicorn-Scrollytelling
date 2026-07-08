@@ -32,7 +32,7 @@
           </button>
           <a href="https://lp.cloudinary.com/e3f.lp.nap.we-are-developers.html" target="_blank" rel="noopener noreferrer"
                   class="inline-flex items-center justify-center rounded-lg border border-pink-400/60 bg-pink-600/40 px-2 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-pink-600/70 active:bg-pink-600 min-h-[44px] sm:min-h-0 flex-1 sm:flex-none sm:max-w-none">
-            Stay in touch
+            Contact Me
           </a>
         </nav>
         <div class="flex items-center shrink-0">
@@ -113,7 +113,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
 
         <!-- Image Column - Sticky on desktop, normal on mobile -->
-        <div id="image-col" class="lg:sticky lg:top-20 lg:h-screen lg:flex lg:items-start lg:justify-center lg:pt-4 order-2 lg:order-1">
+        <div id="image-col" class="lg:sticky lg:top-20 lg:h-screen lg:flex lg:items-start lg:justify-center lg:pt-4 order-1">
           <div class="w-full max-w-sm lg:max-w-lg mx-auto lg:mt-2 lg:mb-20 relative">
                         <img id="main-image" alt="Scrollytelling Image" 
                  class="w-full rounded-xl object-cover opacity-0">
@@ -131,7 +131,7 @@
         </div>
         
                   <!-- Text Column -->
-          <div id="scrolly-container" class="space-y-16 lg:space-y-[80vh] pt-6 pb-16 lg:pt-10 lg:pb-[80vh] max-w-3xl mx-auto lg:pr-8 order-1 lg:order-2">
+          <div id="scrolly-container" class="space-y-16 lg:space-y-[80vh] pt-6 pb-16 lg:pt-10 lg:pb-[80vh] max-w-3xl mx-auto lg:pr-8 order-2">
             <div class="scrolly-intro  px-4 py-6 sm:px-6 sm:py-8 max-w-2xl mx-auto lg:mx-0 text-center lg:text-left">
               <h2 class="text-xl sm:text-2xl md:text-3xl font-semibold text-white leading-snug text-balance">
                 I&rsquo;m just a Cloudicorn, trying to float in space. But I feel kind of heavy! Help me fly!
@@ -238,10 +238,10 @@
                   class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
               <div>
-                <label for="prize-cloud-name" class="block text-sm font-medium text-gray-300 mb-2">Cloudinary cloud name <span class="text-gray-500 font-normal">(optional)</span></label>
-                <p class="text-xs text-gray-500">Special opportunity to get extra credits for users with existing or new cloud names. Login to your Cloudinary console and paste in the cloud name to be eligible for this credits boost.</p>
-              
-                <input type="text" id="prize-cloud-name" name="cloudName" autocomplete="off" placeholder="e.g. jen-demos"
+                <label for="prize-email" class="block text-sm font-medium text-gray-300 mb-2">Email <span class="text-red-400">*</span></label>
+                <p class="text-xs text-gray-500">We&rsquo;ll use this to contact you about your entry and the prize draw.</p>
+
+                <input type="email" id="prize-email" name="email" required autocomplete="email" placeholder="you@example.com"
                   class="w-full px-4 py-3 bg-gray-900/60 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
               <p class="text-xs text-gray-500">Your validated task URLs above are sent with this submission. <span class="sample-transform-hint">You must be present at the booth when we draw the winner to win this prize!</span> We do not retain any data from this form after this event.</p>

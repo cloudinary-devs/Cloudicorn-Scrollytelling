@@ -455,13 +455,21 @@ const ChallengeLab = {
     }
 
     const fullNameEl = document.getElementById('prize-full-name');
-    const cloudNameEl = document.getElementById('prize-cloud-name');
+    const emailEl = document.getElementById('prize-email');
     const fullName = fullNameEl ? fullNameEl.value.trim() : '';
-    const cloudName = cloudNameEl ? cloudNameEl.value.trim() : '';
+    const email = emailEl ? emailEl.value.trim() : '';
 
     if (!fullName) {
       if (statusEl) {
         statusEl.textContent = 'Enter your full name.';
+        statusEl.className = 'text-sm mt-2 text-red-400';
+      }
+      return;
+    }
+
+    if (!email) {
+      if (statusEl) {
+        statusEl.textContent = 'Enter your email address.';
         statusEl.className = 'text-sm mt-2 text-red-400';
       }
       return;
@@ -503,7 +511,7 @@ const ChallengeLab = {
       event: eventId,
       eventName: eventLabel,
       fullName,
-      cloudName,
+      email,
       url1,
       url2
     };
@@ -823,70 +831,45 @@ const Starfield = {
 // ============================================================================
 
 const ImageTransitions = {
-  // Handle image transitions with responsive support
-  handleTransition: (imgElement, imgUrl, transform, isFirstImage = false) => {
+  // Hide the image instantly, then play one quick reveal once the
+  // transformed image has loaded — no outgoing animation.
+  handleTransition: (imgElement, transform) => {
     const imgContainer = d3.select(imgElement.parentNode);
     const loader = imgContainer.select('.section-image-loader, #main-image-loader, #custom-image-loader');
-    
-    if (isFirstImage) {
-      const urls = CloudinaryEngine.generateResponsiveUrls(transform);
-      const srcset = `${urls.small} 300w, ${urls.medium} 600w, ${urls.large} 900w, ${urls.xlarge} 1200w`;
-      
+    const urls = CloudinaryEngine.generateResponsiveUrls(transform);
+    const srcset = `${urls.small} 300w, ${urls.medium} 600w, ${urls.large} 900w, ${urls.xlarge} 1200w`;
+
+    d3.select(imgElement)
+      .interrupt()
+      .style('opacity', 0)
+      .style('transform', 'scale(0.9)')
+      .style('filter', 'blur(10px)');
+    loader.style('opacity', 1);
+
+    const reveal = () => {
+      loader.style('opacity', 0);
       d3.select(imgElement)
-        .attr('srcset', srcset)
-        .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
-        .attr('width', 813)
-        .attr('height', 813)
-        .attr('loading', 'lazy')
+        .on('load.reveal error.reveal', null)
         .transition()
-        .duration(800)
+        .duration(250)
+        .ease(d3.easeCubicOut)
         .style('opacity', 1)
-        .style('transform', 'scale(1) rotate(0deg)')
-        .style('filter', 'blur(0px) brightness(1)');
-    } else {
-      loader.style('opacity', 1);
-      
-      d3.select(imgElement)
-        .transition()
-        .duration(400)
-        .style('opacity', 0)
-        .style('transform', 'scale(0.8) rotate(-5deg)')
-        .style('filter', 'blur(8px) brightness(0.5)')
-        .on('end', function() {
-          const urls = CloudinaryEngine.generateResponsiveUrls(transform);
-          const srcset = `${urls.small} 300w, ${urls.medium} 600w, ${urls.large} 900w, ${urls.xlarge} 1200w`;
-          
-          d3.select(imgElement)
-            .attr('srcset', srcset)
-            .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
-            .attr('width', 813)
-            .attr('height', 813)
-            .attr('loading', 'lazy')
-            .attr('src', urls.medium);
-          
-          d3.select(imgElement)
-            .style('opacity', 0)
-            .style('transform', 'scale(1.2) rotate(5deg)')
-            .style('filter', 'blur(8px) brightness(1.5)');
-          
-          d3.select(imgElement)
-            .transition()
-            .duration(600)
-            .style('opacity', 1)
-            .style('transform', 'scale(1) rotate(0deg)')
-            .style('filter', 'blur(0px) brightness(1)')
-            .on('end', function() {
-              loader.style('opacity', 0);
-              
-              d3.select(imgElement)
-                .transition()
-                .duration(200)
-                .style('transform', 'scale(1.05)')
-                .transition()
-                .duration(200)
-                .style('transform', 'scale(1)');
-            });
-        });
+        .style('transform', 'scale(1)')
+        .style('filter', 'blur(0px)');
+    };
+
+    d3.select(imgElement)
+      .on('load.reveal error.reveal', reveal)
+      .attr('srcset', srcset)
+      .attr('sizes', 'auto, (max-width: 600px) 300px, (max-width: 900px) 600px, (max-width: 1200px) 900px, 1200px')
+      .attr('width', 813)
+      .attr('height', 813)
+      .attr('loading', 'lazy')
+      .attr('src', urls.medium);
+
+    // Already cached / unchanged src: no load event will fire, reveal now.
+    if (imgElement.complete && imgElement.naturalWidth > 0) {
+      reveal();
     }
   },
 
@@ -1055,18 +1038,12 @@ const IntersectionObserver = {
 
           const transform = step.attr('data-transform');
           if (transform) {
-            const imgUrl = CloudinaryEngine.generateUrl(transform);
-            
             if (IntersectionObserver.isDesktop && mainImage.node()) {
-              const currentSrc = mainImage.attr('src');
-              const isFirstImage = !currentSrc || currentSrc === imgUrl;
-              ImageTransitions.handleTransition(mainImage.node(), imgUrl, transform, isFirstImage);
+              ImageTransitions.handleTransition(mainImage.node(), transform);
             } else {
               const stepImage = step.select('.section-image');
               if (stepImage.node()) {
-                const currentOpacity = d3.select(stepImage.node()).style('opacity');
-                const isFirstImage = currentOpacity === '0' || currentOpacity === '';
-                ImageTransitions.handleTransition(stepImage.node(), imgUrl, transform, isFirstImage);
+                ImageTransitions.handleTransition(stepImage.node(), transform);
               }
             }
           }
@@ -1227,7 +1204,9 @@ const SectionsGenerator = {
   // Initialize all images
   initializeImages: () => {
     const mainImage = d3.select('#main-image');
-    const mainImageUrl = CloudinaryEngine.generateUrl('f_auto/q_auto');
+    // Start with the raw, unoptimized asset so scrollers see the "heavy"
+    // Cloudicorn before the first Optimized! step transforms it.
+    const mainImageUrl = CloudinaryEngine.generateUrl('');
     mainImage.attr('src', mainImageUrl);
     mainImage.style('opacity', 1);
     
@@ -1252,9 +1231,10 @@ const SectionsGenerator = {
       const sectionImage = step.select('.section-image');
       
       if (transform && sectionImage.size() > 0) {
+        // Preload the transformed image but keep it hidden — the
+        // IntersectionObserver reveals it when the step scrolls into view.
         const imageUrl = CloudinaryEngine.generateUrl(transform);
         sectionImage.attr('src', imageUrl);
-        sectionImage.style('opacity', 1);
       }
     });
   }

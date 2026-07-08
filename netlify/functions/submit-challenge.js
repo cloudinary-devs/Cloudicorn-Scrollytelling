@@ -31,6 +31,7 @@ const { google } = require('googleapis');
 
 const CLOUD = 'jen-demos';
 const IMAGE_ID = 'main-sample.png';
+const VIDEO_ID = 'uni-star.mp4';
 
 const VALIDATORS = {
   generativeBackgroundReplacePrompt: (n) =>
@@ -38,17 +39,19 @@ const VALIDATORS = {
     /prompt_/.test(n) &&
     /f_auto/.test(n) &&
     /q_auto/.test(n),
-  generativeReplacePrompt: (n) =>
-    /e_gen_replace/.test(n) &&
-    /from_/.test(n) &&
-    /to_/.test(n) &&
+  videoTransform: (n) =>
     /f_auto/.test(n) &&
-    /q_auto/.test(n)
+    /q_auto/.test(n) &&
+    (/e_loop/.test(n) ||
+      /e_boomerang/.test(n) ||
+      /e_reverse/.test(n) ||
+      /e_accelerate/.test(n))
 };
 
+// Task order must match client CONFIG.PRIZE_CHALLENGE.TASKS in main.js.
 const TASK_KEYS = [
   'generativeBackgroundReplacePrompt',
-  'generativeReplacePrompt'
+  'videoTransform'
 ];
 
 function normalizeChain(chain) {
@@ -86,10 +89,41 @@ function extractChainFromUrl(urlString) {
   }
 }
 
+// Mirrors client extractVideoChainFromUrl: /video/upload/ path, uni-star.mp4 asset.
+function extractVideoChainFromUrl(urlString) {
+  try {
+    const u = new URL(String(urlString).trim());
+    if (!u.hostname.endsWith('cloudinary.com')) {
+      return { ok: false, error: 'Not a Cloudinary URL' };
+    }
+    const parts = u.pathname.split('/').filter(Boolean);
+    if (parts[0] !== CLOUD) {
+      return { ok: false, error: 'Wrong cloud' };
+    }
+    const uploadIdx = parts.indexOf('upload');
+    if (uploadIdx < 0 || parts[uploadIdx - 1] !== 'video') {
+      return { ok: false, error: 'Missing video upload path' };
+    }
+    const rest = parts.slice(uploadIdx + 1);
+    if (rest.length < 1) return { ok: false, error: 'Incomplete URL' };
+    const lastSeg = rest[rest.length - 1];
+    if (lastSeg.toLowerCase() !== VIDEO_ID.toLowerCase()) {
+      return { ok: false, error: 'Wrong public ID' };
+    }
+    const beforeFile = rest.slice(0, -1);
+    const chain = beforeFile.filter((seg) => seg && !/^v\d+$/i.test(seg)).join('/');
+    return { ok: true, chain };
+  } catch {
+    return { ok: false, error: 'Invalid URL' };
+  }
+}
+
 function validateTask(taskIndex, urlString) {
   const key = TASK_KEYS[taskIndex];
   if (!key) return { ok: false, error: 'Bad task' };
-  const parsed = extractChainFromUrl(urlString);
+  const parsed = key === 'videoTransform'
+    ? extractVideoChainFromUrl(urlString)
+    : extractChainFromUrl(urlString);
   if (!parsed.ok) return parsed;
   const n = normalizeChain(parsed.chain);
   const fn = VALIDATORS[key];
@@ -221,8 +255,8 @@ exports.handler = async (event) => {
   if (!fullName && typeof body.firstName === 'string' && typeof body.lastName === 'string') {
     fullName = `${body.firstName.trim()} ${body.lastName.trim()}`.trim();
   }
-  const cloudName =
-    typeof body.cloudName === 'string' ? body.cloudName.trim() : '';
+  const contactEmail =
+    typeof body.email === 'string' ? body.email.trim() : '';
   const url1 = typeof body.url1 === 'string' ? body.url1.trim() : '';
   const url2 = typeof body.url2 === 'string' ? body.url2.trim() : '';
   const eventName =
@@ -294,7 +328,7 @@ exports.handler = async (event) => {
             eventSlug,
             eventName,
             fullName,
-            cloudName,
+            contactEmail,
             url1,
             url2
           ]
