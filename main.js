@@ -83,15 +83,15 @@ See “Using a prompt” in the docs.`,
         validator: 'videoTransform',
         title: 'Task 2: Transform the video',
         description:
-          'Apply a video effect to the uni-star video using Cloudinary video transformations. Your URL must include f_auto, q_auto, and one of: e_loop, e_boomerang, e_reverse, or e_accelerate.',
+          'Apply a video effect to the uni-star video using Cloudinary video transformations. Your URL must include f_auto, q_auto, and one of: e_boomerang, e_reverse, or e_accelerate.',
         descriptionHtml: `Apply a video effect to the <strong class="text-white">uni-star</strong> video. Start with this URL:
 <code class="block text-xs font-mono text-emerald-300/95 bg-black/40 rounded px-2 py-1 my-2 break-all">https://res.cloudinary.com/jen-demos/video/upload/v1778796156/uni-star.mp4</code>
 Insert your transformations between <span class="sample-transform-hint">/upload/</span> and the version. Your URL must include:
 <ul class="list-disc list-inside mt-2 mb-2 space-y-1.5 text-gray-300">
 <li><span class="sample-transform-hint">f_auto</span> and <span class="sample-transform-hint">q_auto</span></li>
-<li>One of: <span class="sample-transform-hint">e_loop</span>, <span class="sample-transform-hint">e_boomerang</span>, <span class="sample-transform-hint">e_reverse</span>, or <span class="sample-transform-hint">e_accelerate:&lt;value&gt;</span></li>
+<li>One of: <span class="sample-transform-hint">e_boomerang</span>, <span class="sample-transform-hint">e_reverse</span>, or <span class="sample-transform-hint">e_accelerate:&lt;value&gt;</span></li>
 </ul>
-Example: <span class="sample-transform-hint">…/upload/f_auto,q_auto,e_loop/v1778796156/uni-star.mp4</span>`,
+Example: <span class="sample-transform-hint">…/upload/f_auto,q_auto/v1778796156/uni-star.mp4</span>`,
         docsUrl:
           'https://cloudinary.com/documentation/video_manipulation_and_delivery#video_effects'
       }
@@ -144,8 +144,7 @@ const CHALLENGE_VALIDATORS = {
   videoTransform: (normalizedChain) =>
     /f_auto/.test(normalizedChain) &&
     /q_auto/.test(normalizedChain) &&
-    (/e_loop/.test(normalizedChain) ||
-     /e_boomerang/.test(normalizedChain) ||
+    (/e_boomerang/.test(normalizedChain) ||
      /e_reverse/.test(normalizedChain) ||
      /e_accelerate/.test(normalizedChain))
 };

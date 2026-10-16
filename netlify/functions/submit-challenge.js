@@ -42,8 +42,7 @@ const VALIDATORS = {
   videoTransform: (n) =>
     /f_auto/.test(n) &&
     /q_auto/.test(n) &&
-    (/e_loop/.test(n) ||
-      /e_boomerang/.test(n) ||
+    ( /e_boomerang/.test(n) ||
       /e_reverse/.test(n) ||
       /e_accelerate/.test(n))
 };
