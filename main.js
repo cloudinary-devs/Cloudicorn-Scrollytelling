@@ -48,7 +48,7 @@ const CONFIG = {
    * Override with <meta name="challenge-submit-endpoint" content="..."> if needed.
    */
   PRIZE_CHALLENGE: {
-    DEFAULT_EVENT: 'WeAreDevs2026',
+    DEFAULT_EVENT: 'ATO2026',
     /** Delivery public ID for prize lab URLs (sample lifestyle asset; not the demo Cloudicorn). */
     PUBLIC_ID: 'main-sample.png',
     /** Default POST target (relative works on Netlify and in `netlify dev`). */
@@ -56,7 +56,8 @@ const CONFIG = {
     EVENT_LABELS: {
       devworld: 'DevWorld',
       demo: 'Local / dev (legacy)',
-      wearedevs2026: 'WeAreDevs2026'
+      wearedevs2026: 'wearedevelopers2026',
+      ATO2026: 'ATO2026'
     },
     TASKS: [
       {
@@ -301,7 +302,7 @@ const ChallengeLab = {
     const hero = document.getElementById('prize-challenge-hero-image');
     if (hero) {
       hero.src = url;
-      hero.alt = 'Base image for the prize challenge (add transformations before this filename in the URL)';
+      hero.alt = 'Base image for the challenge (add transformations before this filename in the URL)';
     }
   },
 

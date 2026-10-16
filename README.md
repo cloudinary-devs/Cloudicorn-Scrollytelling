@@ -105,7 +105,7 @@ There is an optional Cloudinary transformation quiz. Add `?quiz=true` to the URL
 
 ## Prize challenge lab
 
-The **Prize challenge** control scrolls to `#prize-lab`, sets `?challenge=true`, and adds an **`event`** slug from each button’s `data-event` (default in `CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT`). Example: `?challenge=true&event=wearedevs2026`.
+The **Prize challenge** control scrolls to `#prize-lab`, sets `?challenge=true`, and adds an **`event`** slug from each button’s `data-event` (default in `CONFIG.PRIZE_CHALLENGE.DEFAULT_EVENT`). Example: `?challenge=true&event=ATO2026`.
 
 Participants paste two full Cloudinary delivery URLs: **generative background replace with a `prompt_`**, and **generative replace** with **`from_` and `to_`**, each chained with `f_auto` and `q_auto`. Rules live in `CONFIG.PRIZE_CHALLENGE.TASKS` in [`main.js`](main.js) and are mirrored in [`netlify/functions/submit-challenge.js`](netlify/functions/submit-challenge.js). **Submit entries** stays disabled until both **Check URL** steps pass.
 
