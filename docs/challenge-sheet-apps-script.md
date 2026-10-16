@@ -82,8 +82,8 @@ The app sends:
 
 ```json
 {
-  "event": "wearedevs2026",
-  "eventName": "We Are Developers 2026",
+  "event": "ATO2026",
+  "eventName": "ATO 2026",
   "fullName": "Ada Lovelace",
   "cloudName": "jen-demos",
   "url1": "https://res.cloudinary.com/...",

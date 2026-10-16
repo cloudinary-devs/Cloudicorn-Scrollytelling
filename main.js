@@ -48,7 +48,7 @@ const CONFIG = {
    * Override with <meta name="challenge-submit-endpoint" content="..."> if needed.
    */
   PRIZE_CHALLENGE: {
-    DEFAULT_EVENT: 'ATO2026',
+    DEFAULT_EVENT: 'event',
     /** Delivery public ID for prize lab URLs (sample lifestyle asset; not the demo Cloudicorn). */
     PUBLIC_ID: 'main-sample.png',
     /** Default POST target (relative works on Netlify and in `netlify dev`). */
@@ -56,7 +56,6 @@ const CONFIG = {
     EVENT_LABELS: {
       devworld: 'DevWorld',
       demo: 'Local / dev (legacy)',
-      wearedevs2026: 'wearedevelopers2026',
       ATO2026: 'ATO2026'
     },
     TASKS: [
